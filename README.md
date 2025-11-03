@@ -39,7 +39,7 @@ pip install -r requirements.txt
 
 4. **Execute o sistema:**
 ```powershell
-python run.py
+python INICIAR.py
 ```
 
 O navegador abrirá automaticamente em http://127.0.0.1:5000
@@ -65,7 +65,7 @@ pip install -r requirements.txt
 
 4. **Execute o sistema:**
 ```bash
-python run.py
+python INICIAR.py
 ```
 
 ##  Estrutura do Projeto
@@ -84,7 +84,7 @@ ClinicaVeterinaria/
     consultas.html      # Agendamento de consultas
  scripts/                # Scripts auxiliares
  requirements.txt        # Dependências Python
- run.py                  # Script de inicialização
+ INICIAR.py                  # Script de inicialização
 ```
 
 ##  Funcionalidades
@@ -150,3 +150,4 @@ Este projeto foi desenvolvido para fins acadêmicos.
 
 ---
 **Repositório**: https://github.com/BearBR/ClinicaVeterinaria
+
