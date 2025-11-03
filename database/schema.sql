@@ -1,0 +1,42 @@
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE IF NOT EXISTS donos (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  nome TEXT NOT NULL,
+  telefone TEXT,
+  email TEXT,
+  endereco TEXT,
+  cep TEXT
+);
+
+CREATE TABLE IF NOT EXISTS pets (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  nome TEXT NOT NULL,
+  especie TEXT NOT NULL,
+  raca TEXT,
+  idade INTEGER,
+  peso REAL,
+  dono_id INTEGER NOT NULL,
+  FOREIGN KEY (dono_id) REFERENCES donos(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS veterinarios (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  nome TEXT NOT NULL,
+  crmv TEXT UNIQUE NOT NULL,
+  especialidade TEXT,
+  telefone TEXT,
+  email TEXT
+);
+
+CREATE TABLE IF NOT EXISTS consultas (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  data TEXT NOT NULL,
+  hora TEXT NOT NULL,
+  motivo TEXT,
+  status TEXT NOT NULL DEFAULT 'agendada',
+  pet_id INTEGER NOT NULL,
+  veterinario_id INTEGER NOT NULL,
+  FOREIGN KEY (pet_id) REFERENCES pets(id) ON DELETE CASCADE,
+  FOREIGN KEY (veterinario_id) REFERENCES veterinarios(id) ON DELETE SET NULL
+);

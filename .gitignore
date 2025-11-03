@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+.vscode/
+.DS_Store
+database/clinica.db
+*.log
+.env
+# If you prefer to include the DB for delivery, remove the database/clinica.db line above

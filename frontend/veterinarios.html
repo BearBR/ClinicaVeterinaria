@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+    <!-- Configuração de codificação de caracteres -->
+    <meta charset="utf-8" />
+    
+    <!-- Título da página -->
+    <title>Gerenciamento de Veterinários - PetCare</title>
+    
+    <!-- Responsividade -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    
+    <!-- Meta description -->
+    <meta name="description" content="Módulo de cadastro e gerenciamento de veterinários" />
+    
+    <!-- Bootstrap CSS -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    />
+</head>
+<body class="bg-light">
+    <!-- 
+    ========================================================================
+    BARRA DE NAVEGAÇÃO
+    ========================================================================
+    -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-info" role="navigation">
+        <div class="container-fluid">
+            <!-- Logo/Marca da clínica -->
+            <a class="navbar-brand" href="/">
+                🐾 PetCare
+            </a>
+            
+            <!-- Botão hambúrguer para mobile -->
+            <button 
+                class="navbar-toggler" 
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#navbarNav"
+                aria-controls="navbarNav"
+                aria-expanded="false"
+                aria-label="Alternar navegação"
+            >
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <!-- Itens de navegação -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/donos">Donos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/pets">Pets</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="/veterinarios">Veterinários</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 
+    ========================================================================
+    CONTEÚDO PRINCIPAL
+    ========================================================================
+    -->
+    <main class="container my-4" role="main">
+        <!-- Título da página -->
+        <h1 class="mb-4">Gerenciamento de Veterinários</h1>
+
+        <!-- Formulário de Cadastro/Edição -->
+        <form id="form-veterinario" class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-info text-white">
+                <h2 class="h5 mb-0">Cadastro de Veterinário</h2>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Nome Completo</label>
+                        <input
+                            class="form-control"
+                            name="nome"
+                            placeholder="Nome do veterinário"
+                            required
+                        />
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="form-label">CRMV</label>
+                        <input
+                            class="form-control"
+                            name="crmv"
+                            placeholder="Número do CRMV"
+                            required
+                        />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Especialidade</label>
+                        <select class="form-select" name="especialidade" required>
+                            <option value="">Selecione</option>
+                            <option value="clinico">Clínico Geral</option>
+                            <option value="cirurgiao">Cirurgião</option>
+                            <option value="dermatologia">Dermatologia</option>
+                            <option value="ortopedia">Ortopedia</option>
+                            <option value="cardiologia">Cardiologia</option>
+                            <option value="outro">Outra</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Email</label>
+                        <input
+                            type="email"
+                            class="form-control"
+                            name="email"
+                            placeholder="email@exemplo.com"
+                        />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Telefone</label>
+                        <input
+                            class="form-control"
+                            name="telefone"
+                            placeholder="(99) 99999-9999"
+                        />
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label">Observações</label>
+                        <textarea
+                            class="form-control"
+                            name="observacoes"
+                            rows="2"
+                            placeholder="Observações adicionais"
+                        ></textarea>
+                    </div>
+
+                    <div class="col-12 d-grid">
+                        <button class="btn btn-info text-white" type="submit" id="submit-btn">
+                            Salvar Veterinário
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <!-- Tabela de Veterinários -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h3 class="h5 mb-0">Veterinários Cadastrados</h3>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nome</th>
+                                <th>CRMV</th>
+                                <th>Especialidade</th>
+                                <th>Contato</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-veterinarios"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Script para manipulação do CRUD -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const API = 'http://127.0.0.1:5000';
+                let editandoId = null;
+
+                // Carregar lista de veterinários
+                async function carregarVeterinarios() {
+                    const r = await fetch(`${API}/api/veterinarios`);
+                    const veterinarios = await r.json();
+                    document.getElementById('tbody-veterinarios').innerHTML =
+                        veterinarios.map(function(v) {
+                            return `
+                                <tr>
+                                    <td>${v.id}</td>
+                                    <td><strong>${v.nome}</strong></td>
+                                    <td>${v.crmv || ''}</td>
+                                    <td>${v.especialidade || ''}</td>
+                                    <td>
+                                        ${v.email ? `<div>${v.email}</div>` : ''}
+                                        ${v.telefone ? `<div class="text-muted">${v.telefone}</div>` : ''}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-warning btn-sm me-1" onclick="editarVeterinario(${v.id})">
+                                            Editar
+                                        </button>
+                                        <button class="btn btn-danger btn-sm" onclick="deletarVeterinario(${v.id})">
+                                            Excluir
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('');
+                }
+
+                // Deletar veterinário
+                window.deletarVeterinario = async function(id) {
+                    if (!confirm('Deseja realmente excluir este veterinário?')) return;
+                    const response = await fetch(`${API}/api/veterinarios/${id}`, { method: 'DELETE' });
+                    if (!response.ok) {
+                        alert('Erro ao excluir o veterinário.');
+                        return;
+                    }
+                    alert('Veterinário excluído com sucesso!');
+                    carregarVeterinarios();
+                };
+
+                // Editar veterinário
+                window.editarVeterinario = async function(id) {
+                    const r = await fetch(`${API}/api/veterinarios/${id}`);
+                    const vet = await r.json();
+                    const form = document.getElementById('form-veterinario');
+                    form.nome.value = vet.nome || '';
+                    form.crmv.value = vet.crmv || '';
+                    form.especialidade.value = vet.especialidade || '';
+                    form.email.value = vet.email || '';
+                    form.telefone.value = vet.telefone || '';
+                    form.observacoes.value = vet.observacoes || '';
+                    editandoId = id;
+                    document.getElementById('submit-btn').textContent = 'Atualizar Veterinário';
+                };
+
+                // Submit do formulário
+                document.getElementById('form-veterinario').addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const fd = new FormData(e.target);
+                    const vetData = Object.fromEntries(fd);
+
+                    if (editandoId) {
+                        await fetch(`${API}/api/veterinarios/${editandoId}`, {
+                            method: 'PUT',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify(vetData)
+                        });
+                        editandoId = null;
+                        document.getElementById('submit-btn').textContent = 'Salvar Veterinário';
+                    } else {
+                        await fetch(`${API}/api/veterinarios`, {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify(vetData)
+                        });
+                    }
+
+                    e.target.reset();
+                    carregarVeterinarios();
+                });
+
+                // Inicialização
+                carregarVeterinarios();
+            });
+        </script>
+    </main>
+
+    <!-- InputMask para formatação de campos -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/inputmask/5.0.6/inputmask.min.js"></script>
+
+    <!-- Bootstrap JavaScript Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Aplicar máscaras -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Máscara para telefone
+            const telefoneInput = document.querySelector('input[name="telefone"]');
+            Inputmask("(99) 99999-9999").mask(telefoneInput);
+
+            // Máscara para CRMV (formato 00000-UF)
+            const crmvInput = document.querySelector('input[name="crmv"]');
+            Inputmask("99999-AA").mask(crmvInput);
+        });
+    </script>
+</body>
+</html>
