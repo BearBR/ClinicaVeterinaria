@@ -1,33 +1,14 @@
 <!doctype html>
 <html lang="pt-br">
 <head>
-    <!-- Configuração de codificação de caracteres UTF-8 para suportar acentos -->
     <meta charset="utf-8" />
-    
-    <!-- Título que aparece na aba do navegador -->
-    <title>Clínica Veterinária PetCare - Sistema de Gerenciamento</title>
-    
-    <!-- Meta tag para responsividade em dispositivos móveis -->
+    <title>Clínica Veterinária Unimar - Sistema de Gerenciamento</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    
-    <!-- Meta description para SEO e contexto -->
     <meta name="description" content="Sistema de Clínica Veterinária" />
-    
-    <!-- Preconnect para acelerar requisições ao CDN -->
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
     
-    <!-- Link para framework CSS Bootstrap versão 5.3.3 -->
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    />
-    
-    <!-- Estilos CSS customizados para esta página -->
     <style>
-        /* 
-         * Seção Hero: Cabeçalho principal com gradiente roxo
-         * Utiliza gradiente diagonal de 135 graus
-         */
         .secao-hero {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -35,10 +16,6 @@
             text-align: center;
         }
         
-        /* 
-         * Card de Serviço: Estilização dos cards clicáveis
-         * Adiciona transição suave para efeitos visuais
-         */
         .card-servico {
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             height: 100%;
@@ -46,112 +23,54 @@
             color: inherit;
         }
         
-        /* 
-         * Efeito Hover: Animação quando o usuário passa o mouse
-         * Move o card 10 pixels para cima e adiciona sombra
-         */
         .card-servico:hover {
             transform: translateY(-10px);
             box-shadow: 0 15px 30px rgba(0,0,0,0.25);
         }
         
-        /* 
-         * Ícone Grande: Tamanho dos emojis nos cards
-         */
         .icone-grande {
             font-size: 4rem;
             margin-bottom: 1rem;
         }
         
-        /*
-         * Remove decoração de link quando o card inteiro é clicável
-         */
         .link-card {
             text-decoration: none;
             color: inherit;
         }
         
-        /*
-         * Garante que o texto dentro dos links não fique azul
-         */
         .link-card:hover {
             color: inherit;
         }
     </style>
 </head>
 <body>
-    <!-- 
-    ========================================================================
-    SEÇÃO HERO (CABEÇALHO PRINCIPAL)
-    Área de destaque no topo da página com informações institucionais
-    ========================================================================
-    -->
     <header class="secao-hero" role="banner">
         <div class="container">
-            <!-- Título principal da clínica com emoji decorativo -->
-            <h1 class="display-3 fw-bold mb-3" aria-label="Clínica Veterinária PetCare">
-                🐾 Clínica Veterinária PetCare
+            <h1 class="display-3 fw-bold mb-3">
+                🐾 Clínica Veterinária Unimar
             </h1>
-            
-            <!-- Subtítulo explicativo -->
             <p class="lead fs-4">
                 Bem-vindo ao Sistema de Gerenciamento Integrado
             </p>
-            
-            <!-- Slogan da clínica -->
             <p class="fs-5">
                 Cuidando Dos Seus Pets Com Amor E Dedicação
             </p>
         </div>
-    </div>
+    </header>
 
-    <!-- 
-    ========================================================================
-    SEÇÃO DE SERVIÇOS DO SISTEMA
-    Grid responsivo com cards representando cada módulo
-    ========================================================================
-    -->
-    <main class="container my-5" id="conteudo-principal" role="main">
-        <!-- Título da seção de serviços -->
+    <main class="container my-5">
         <h2 class="text-center mb-5">Módulos do Sistema</h2>
         
-        <!-- 
-        Grid Bootstrap com 3 colunas
-        g-4: adiciona gap (espaçamento) de 1.5rem entre os cards
-        -->
         <div class="row g-4">
-            
-            <!-- 
-            ================================================================
-            CARD 1: MÓDULO DE GERENCIAMENTO DE DONOS
-            ================================================================
-            -->
             <div class="col-md-4">
-                <!-- 
-                Link que envolve o card inteiro
-                Torna todo o card clicável, melhor UX
-                -->
-                <a href="/donos" class="link-card" aria-label="Acessar módulo Donos de Pets">
+                <a href="/donos" class="link-card">
                     <div class="card card-servico border-0 shadow h-100">
                         <div class="card-body text-center p-5">
-                            <!-- 
-                            Ícone decorativo (emoji de pessoas)
-                            aria-hidden="true": oculta para leitores de tela
-                            -->
-                            <div class="icone-grande" aria-hidden="true">👥</div>
-                            
-                            <!-- Título do módulo -->
+                            <div class="icone-grande">👥</div>
                             <h3 class="card-title">Donos de Pets</h3>
-                            
-                            <!-- Descrição curta do módulo -->
                             <p class="card-text text-muted">
                                 Cadastro completo e gerenciamento de proprietários de animais
                             </p>
-                            
-                            <!-- 
-                            Botão visual (não precisa de role="button")
-                            Apenas decorativo, pois o card inteiro já é clicável
-                            -->
                             <span class="btn btn-primary btn-lg mt-3">
                                 Acessar Módulo
                             </span>
@@ -160,24 +79,15 @@
                 </a>
             </div>
 
-            <!-- 
-            ================================================================
-            CARD 2: MÓDULO DE GERENCIAMENTO DE PETS
-            ================================================================
-            -->
             <div class="col-md-4">
-                <a href="/pets" class="link-card" aria-label="Acessar módulo Animais de Estimação">
+                <a href="/pets" class="link-card">
                     <div class="card card-servico border-0 shadow h-100">
                         <div class="card-body text-center p-5">
-                            <!-- Ícone de cachorro (decorativo) -->
-                            <div class="icone-grande" aria-hidden="true">🐶</div>
-                            
+                            <div class="icone-grande">🐶</div>
                             <h3 class="card-title">Animais de Estimação</h3>
-                            
                             <p class="card-text text-muted">
                                 Cadastro e controle completo dos pets atendidos na clínica
                             </p>
-                            
                             <span class="btn btn-success btn-lg mt-3">
                                 Acessar Módulo
                             </span>
@@ -186,24 +96,15 @@
                 </a>
             </div>
 
-            <!-- 
-            ================================================================
-            CARD 3: MÓDULO DE GERENCIAMENTO DE VETERINÁRIOS
-            ================================================================
-            -->
             <div class="col-md-4">
-                <a href="/veterinarios" class="link-card" aria-label="Acessar módulo Veterinários">
+                <a href="/veterinarios" class="link-card">
                     <div class="card card-servico border-0 shadow h-100">
                         <div class="card-body text-center p-5">
-                            <!-- Ícone de médico (decorativo) -->
-                            <div class="icone-grande" aria-hidden="true">👨‍⚕️</div>
-                            
+                            <div class="icone-grande">👨‍⚕️</div>
                             <h3 class="card-title">Veterinários</h3>
-                            
                             <p class="card-text text-muted">
                                 Cadastro e gestão dos profissionais da clínica
                             </p>
-                            
                             <span class="btn btn-info btn-lg mt-3">
                                 Acessar Módulo
                             </span>
@@ -212,24 +113,15 @@
                 </a>
             </div>
 
-            <!-- 
-            ================================================================
-            CARD 4: MÓDULO DE AGENDAMENTO DE CONSULTAS
-            ================================================================
-            -->
             <div class="col-md-4">
-                <a href="/consultas" class="link-card" aria-label="Acessar módulo Agendamento de Consultas">
+                <a href="/consultas" class="link-card">
                     <div class="card card-servico border-0 shadow h-100">
                         <div class="card-body text-center p-5">
-                            <!-- Ícone de calendário (decorativo) -->
-                            <div class="icone-grande" aria-hidden="true">📅</div>
-                            
+                            <div class="icone-grande">📅</div>
                             <h3 class="card-title">Agendamento</h3>
-                            
                             <p class="card-text text-muted">
                                 Marcação e Controle de Consultas e Procedimentos
                             </p>
-                            
                             <span class="btn btn-warning btn-lg mt-3">
                                 Acessar Módulo
                             </span>
@@ -237,29 +129,20 @@
                     </div>
                 </a>
             </div>
-            
         </div>
-    </div>
+    </main>
 
-    <!-- 
-    ========================================================================
-    RODAPÉ DA PÁGINA
-    Informações de copyright e identificação
-    ========================================================================
-    -->
     <footer class="bg-light text-center py-4 mt-5">
         <div class="container">
-            <!-- Texto de copyright -->
             <p class="text-muted mb-0">
-                © 2025 Clínica Veterinária PetCare | Sistema de Gerenciamento Integrado
+                © 2025 Clínica Veterinária Unimar | Sistema de Gerenciamento Integrado
             </p>
             <p class="text-muted small mt-1">
-                Desenvolvido com Flask e Bootstrap
+                Desenvolvido por: Marcio Santos
             </p>
         </div>
     </footer>
 
-    <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
