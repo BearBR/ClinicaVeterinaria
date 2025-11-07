@@ -2,6 +2,9 @@ from docx import Document
 from docx.shared import Pt, RGBColor, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from datetime import datetime
+import os
+
+print("Gerando documentação...")
 
 # Criar documento
 doc = Document()
@@ -17,7 +20,7 @@ titulo_run.font.size = Pt(28)
 titulo_run.font.color.rgb = RGBColor(0, 51, 102)
 
 # Subtítulo
-subtitulo = doc.add_heading('Clínica Veterinária Unimar', 1)
+subtitulo = doc.add_heading('Clínica Veterinária', 1)
 subtitulo.alignment = WD_ALIGN_PARAGRAPH.CENTER
 subtitulo_run = subtitulo.runs[0]
 subtitulo_run.font.size = Pt(22)
@@ -38,7 +41,7 @@ info_run.bold = True
 info_run = info.add_run(f'RA: 13119972\n\n')
 info_run.font.size = Pt(14)
 info_run.bold = True
-info_run = info.add_run(f'{datetime.now().strftime("%B de %Y")}\n')
+info_run = info.add_run(f'Novembro de 2025\n')
 info_run.font.size = Pt(12)
 
 doc.add_page_break()
@@ -52,9 +55,9 @@ sumario_items = [
     '2. Tecnologias Utilizadas',
     '3. Funcionalidades Implementadas',
     '4. Instalação e Execução',
-    '5. Manual de Uso',
-    '6. Estrutura do Projeto',
-    '7. Prints das Telas',
+    '5. Estrutura do Projeto',
+    '6. Prints das Telas',
+    '7. Conclusão'
 ]
 for item in sumario_items:
     p = doc.add_paragraph(item)
@@ -197,179 +200,80 @@ doc.add_page_break()
 # ============================================================================
 doc.add_heading('4. Instalação e Execução', 1)
 
-doc.add_heading('4.1 Requisitos do Sistema', 2)
+doc.add_heading('4.1 Requisitos', 2)
 requisitos = [
     'Python 3.8 ou superior',
-    'pip (gerenciador de pacotes Python)',
-    'Navegador web moderno (Chrome, Firefox, Edge)',
-    'Sistema operacional: Windows, Linux ou macOS'
+    'Navegador web moderno (Chrome, Firefox, Edge)'
 ]
 for req in requisitos:
     doc.add_paragraph(req, style='List Bullet')
 
-doc.add_heading('4.2 Passo a Passo - Windows', 2)
-doc.add_paragraph('1. Descompacte o arquivo ra13119972.zip em uma pasta')
-doc.add_paragraph('2. Abra o PowerShell na pasta do projeto')
-doc.add_paragraph('3. Crie o ambiente virtual:')
-doc.add_paragraph('   python -m venv .venv', style='Intense Quote')
-doc.add_paragraph('4. Ative o ambiente virtual:')
-doc.add_paragraph('   .\\.venv\\Scripts\\Activate.ps1', style='Intense Quote')
-doc.add_paragraph('5. Instale as dependências:')
-doc.add_paragraph('   pip install -r requirements.txt', style='Intense Quote')
-doc.add_paragraph('6. Execute o sistema:')
-doc.add_paragraph('   python INICIAR.py', style='Intense Quote')
-doc.add_paragraph('7. O navegador abrirá automaticamente em http://127.0.0.1:5000')
+doc.add_heading('4.2 Como Executar', 2)
+doc.add_paragraph('1. Descompacte o arquivo em uma pasta')
+doc.add_paragraph('2. Duplo clique em: INICIAR_SERVIDOR.bat')
+doc.add_paragraph('3. O navegador abrirá automaticamente')
+doc.add_paragraph('4. Sistema disponível em: http://127.0.0.1:5000')
 
-doc.add_heading('4.3 Passo a Passo - Linux/Mac', 2)
-doc.add_paragraph('1. Descompacte o arquivo ra13119972.zip')
-doc.add_paragraph('2. Abra o terminal na pasta do projeto')
-doc.add_paragraph('3. Execute os comandos:')
-doc.add_paragraph('   python3 -m venv .venv', style='Intense Quote')
-doc.add_paragraph('   source .venv/bin/activate', style='Intense Quote')
-doc.add_paragraph('   pip install -r requirements.txt', style='Intense Quote')
-doc.add_paragraph('   python INICIAR.py', style='Intense Quote')
+doc.add_paragraph('')
+doc.add_paragraph('Problemas? Consulte o arquivo: docs/SOLUCAO_PROBLEMAS.md')
 
 doc.add_page_break()
 
 # ============================================================================
-# 5. MANUAL DE USO
+# 5. ESTRUTURA DO PROJETO
 # ============================================================================
-doc.add_heading('5. Manual de Uso', 1)
-
-doc.add_heading('5.1 Acessando o Sistema', 2)
-doc.add_paragraph(
-    'Após executar o comando "python INICIAR.py", o sistema abrirá automaticamente '
-    'no navegador padrão. A página inicial apresenta quatro cards principais, '
-    'cada um representando um módulo do sistema.'
-)
-
-doc.add_heading('5.2 Cadastrando um Dono de Pet', 2)
-passos_dono = [
-    'Clique no card "Donos de Pets" na página inicial',
-    'Preencha o formulário com nome, telefone, email, endereço e CEP',
-    'As máscaras de telefone e CEP são aplicadas automaticamente',
-    'Clique no botão "Salvar"',
-    'O novo dono aparecerá na tabela abaixo',
-    'Para editar: clique no botão "Editar" na linha desejada',
-    'Para excluir: clique no botão "Excluir" (confirme a ação)'
-]
-for i, passo in enumerate(passos_dono, 1):
-    doc.add_paragraph(f'{i}. {passo}')
-
-doc.add_heading('5.3 Cadastrando um Pet', 2)
-passos_pet = [
-    'Clique no card "Animais de Estimação"',
-    'Selecione o dono do pet no dropdown',
-    'Preencha nome, espécie, raça, idade e peso do animal',
-    'Clique em "Salvar"',
-    'O pet será listado com as informações do dono'
-]
-for i, passo in enumerate(passos_pet, 1):
-    doc.add_paragraph(f'{i}. {passo}')
-
-doc.add_heading('5.4 Cadastrando um Veterinário', 2)
-passos_vet = [
-    'Clique no card "Veterinários"',
-    'Preencha nome, CRMV (formato: 12345-SP), especialidade, email e telefone',
-    'O sistema valida se o CRMV já existe',
-    'Clique em "Salvar"',
-    'O veterinário estará disponível para agendamentos'
-]
-for i, passo in enumerate(passos_vet, 1):
-    doc.add_paragraph(f'{i}. {passo}')
-
-doc.add_heading('5.5 Agendando uma Consulta', 2)
-passos_consulta = [
-    'Clique no card "Agendamento"',
-    'Selecione o pet e o veterinário',
-    'Escolha data, hora e tipo de atendimento',
-    'Adicione observações sobre o motivo da consulta',
-    'Clique em "Agendar Consulta"',
-    'A consulta aparecerá na tabela com status "agendada"'
-]
-for i, passo in enumerate(passos_consulta, 1):
-    doc.add_paragraph(f'{i}. {passo}')
-
-doc.add_page_break()
-
-# ============================================================================
-# 6. ESTRUTURA DO PROJETO
-# ============================================================================
-doc.add_heading('6. Estrutura do Projeto', 1)
+doc.add_heading('5. Estrutura do Projeto', 1)
 
 doc.add_paragraph('O projeto está organizado da seguinte forma:')
 doc.add_paragraph('')
 
-estrutura = """ClinicaVeterinaria/
+estrutura = """RA13119972-23/
 ├── backend/
-│   └── app.py              # API Flask com todas as rotas
+│   └── app.py              # API Flask
 ├── database/
-│   └── schema.sql          # Estrutura do banco de dados
+│   └── schema.sql          # Estrutura do banco
 ├── frontend/
-│   ├── index.html          # Página inicial (Dashboard)
-│   ├── donos.html          # Módulo de donos
-│   ├── pets.html           # Módulo de pets
-│   ├── veterinarios.html   # Módulo de veterinários
-│   └── consultas.html      # Módulo de consultas
-├── INICIAR.py              # Script de inicialização
-├── requirements.txt        # Dependências do projeto
-└── README.md               # Documentação técnica"""
+│   ├── index.html          # Página inicial
+│   ├── donos.html          # Donos
+│   ├── pets.html           # Pets
+│   ├── veterinarios.html   # Veterinários
+│   └── consultas.html      # Consultas
+├── INICIAR_SERVIDOR.bat    # Inicialização (recomendado)
+├── INICIAR.py              # Script Python
+└── requirements.txt        # Dependências"""
 
 p = doc.add_paragraph(estrutura)
 p.style = 'Intense Quote'
 
-doc.add_heading('Descrição dos Arquivos Principais:', 2)
-descricoes = [
-    'backend/app.py: Contém toda a lógica do servidor, rotas da API REST e conexão com banco de dados',
-    'database/schema.sql: Define a estrutura das tabelas (donos, pets, veterinarios, consultas)',
-    'frontend/*.html: Páginas web com interface do usuário',
-    'INICIAR.py: Script que inicia o servidor Flask e abre o navegador automaticamente',
-    'requirements.txt: Lista todas as bibliotecas Python necessárias'
-]
-for desc in descricoes:
-    doc.add_paragraph(desc, style='List Bullet')
-
 doc.add_page_break()
 
 # ============================================================================
-# 7. PRINTS DAS TELAS
+# 6. PRINTS DAS TELAS
 # ============================================================================
-doc.add_heading('7. Prints das Telas do Sistema', 1)
+doc.add_heading('6. Prints das Telas do Sistema', 1)
 
 doc.add_paragraph(
-    'NOTA: As capturas de tela devem ser inseridas abaixo de cada título. '
-    'Tire prints mostrando as funcionalidades em uso (com dados preenchidos).'
+    'IMPORTANTE: Tire prints do sistema em funcionamento e insira nas páginas seguintes. '
+    'Os prints devem mostrar as telas com dados preenchidos.'
 )
 doc.add_paragraph('')
 
 # Seções para prints
 prints_secoes = [
-    ('7.1 Página Inicial (Dashboard)', 
-     'Print da tela inicial mostrando os quatro cards principais do sistema.'),
+    ('6.1 Página Inicial', 
+     'Tela inicial mostrando os quatro cards principais.'),
     
-    ('7.2 Módulo de Donos - Listagem', 
-     'Print mostrando a tabela com donos cadastrados e o formulário de cadastro.'),
+    ('6.2 Cadastro de Donos', 
+     'Tela de cadastro e listagem de donos.'),
     
-    ('7.3 Módulo de Donos - Cadastro', 
-     'Print do formulário preenchido com exemplo de cadastro de um novo dono.'),
+    ('6.3 Cadastro de Pets', 
+     'Tela de cadastro e listagem de pets.'),
     
-    ('7.4 Módulo de Pets - Listagem', 
-     'Print da tabela de pets mostrando animais cadastrados com seus respectivos donos.'),
+    ('6.4 Cadastro de Veterinários', 
+     'Tela de cadastro e listagem de veterinários.'),
     
-    ('7.5 Módulo de Pets - Cadastro', 
-     'Print do formulário de cadastro de pet com dados de exemplo.'),
-    
-    ('7.6 Módulo de Veterinários - Listagem', 
-     'Print mostrando veterinários cadastrados com CRMV e especialidades.'),
-    
-    ('7.7 Módulo de Veterinários - Cadastro', 
-     'Print do formulário de cadastro de veterinário com dados preenchidos.'),
-    
-    ('7.8 Módulo de Consultas - Agendamento', 
-     'Print da tela de agendamento de consultas com formulário preenchido.'),
-    
-    ('7.9 Módulo de Consultas - Listagem', 
-     'Print da tabela mostrando consultas agendadas com informações completas.')
+    ('6.5 Agendamento de Consultas', 
+     'Tela de agendamento e listagem de consultas.')
 ]
 
 for titulo, descricao in prints_secoes:
@@ -384,18 +288,18 @@ for titulo, descricao in prints_secoes:
 doc.add_page_break()
 
 # ============================================================================
-# CONCLUSÃO
+# 7. CONCLUSÃO
 # ============================================================================
-doc.add_heading('Conclusão', 1)
+doc.add_heading('7. Conclusão', 1)
 doc.add_paragraph(
-    'O Sistema de Gerenciamento da Clínica Veterinária Unimar foi desenvolvido com sucesso, '
-    'atendendo a todos os requisitos propostos pelo projeto integrador. O sistema apresenta '
-    'interface intuitiva, funcionalidades completas de CRUD (Create, Read, Update, Delete) '
-    'para todos os módulos e integração eficiente entre front-end, back-end e banco de dados.'
+    'O Sistema de Gerenciamento da Clínica Veterinária foi desenvolvido com sucesso, '
+    'atendendo aos requisitos propostos. O sistema apresenta interface intuitiva, '
+    'funcionalidades completas de CRUD para todos os módulos e integração eficiente '
+    'entre front-end, back-end e banco de dados.'
 )
 doc.add_paragraph(
-    'A aplicação está pronta para uso em ambiente de clínica veterinária, proporcionando '
-    'uma solução completa para gerenciamento de informações e otimização do fluxo de trabalho.'
+    'A aplicação está pronta para uso em clínicas veterinárias, proporcionando '
+    'uma solução completa para gerenciamento de informações.'
 )
 
 doc.add_paragraph('')
@@ -409,7 +313,11 @@ run = p.add_run('RA: 13119972\n')
 run = p.add_run('UNIMAR - 2025')
 
 # Salvar documento
-doc.save('Documentacao_ClinicaVeterinaria_RA13119972.docx')
+output_file = 'DOCUMENTACAO_RA13119972.docx'
+doc.save(output_file)
 print("✅ Documentação criada com sucesso!")
-print("📄 Arquivo: Documentacao_ClinicaVeterinaria_RA13119972.docx")
-print("\n⚠️ IMPORTANTE: Adicione os prints das telas na seção 7 antes de converter para PDF!")
+print(f"📄 Arquivo: {output_file}")
+print("\n⚠️ IMPORTANTE:")
+print("1. Tire prints das telas do sistema funcionando")
+print("2. Abra o arquivo DOCX e insira os prints na seção 6")
+print("3. Salve e converta para PDF se necessário")

@@ -67,9 +67,12 @@
                         placeholder="CEP"
                     />
                 </div>
-                <div class="col-12 d-grid">
+                <div class="col-12 d-grid gap-2">
                     <button class="btn btn-primary btn-lg" type="submit" id="submit-btn">
                         Salvar
+                    </button>
+                    <button class="btn btn-secondary btn-lg" type="button" id="cancel-btn" style="display:none;" onclick="cancelarEdicao()">
+                        Cancelar
                     </button>
                 </div>
             </div>
@@ -140,6 +143,14 @@
                 document.querySelector('input[name=cep]').value = dono.cep || '';
                 editandoId = id;
                 document.getElementById('submit-btn').textContent = 'Alterar';
+                document.getElementById('cancel-btn').style.display = 'block';
+            };
+
+            window.cancelarEdicao = function() {
+                editandoId = null;
+                document.getElementById('form-dono').reset();
+                document.getElementById('submit-btn').textContent = 'Salvar';
+                document.getElementById('cancel-btn').style.display = 'none';
             };
 
             document.getElementById('form-dono').addEventListener('submit', async function(e) {
@@ -155,6 +166,7 @@
                     });
                     editandoId = null;
                     document.getElementById('submit-btn').textContent = 'Salvar';
+                    document.getElementById('cancel-btn').style.display = 'none';
                 } else {
                     await fetch(`${API}/api/donos`, {
                         method: 'POST',

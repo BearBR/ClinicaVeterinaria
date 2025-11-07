@@ -144,9 +144,12 @@
                         ></textarea>
                     </div>
 
-                    <div class="col-12 d-grid">
+                    <div class="col-12 d-grid gap-2">
                         <button class="btn btn-info text-white" type="submit" id="submit-btn">
                             Salvar Veterinário
+                        </button>
+                        <button class="btn btn-secondary" type="button" id="cancel-btn" style="display:none;" onclick="cancelarEdicao()">
+                            Cancelar
                         </button>
                     </div>
                 </div>
@@ -237,6 +240,15 @@
                     form.observacoes.value = vet.observacoes || '';
                     editandoId = id;
                     document.getElementById('submit-btn').textContent = 'Atualizar Veterinário';
+                    document.getElementById('cancel-btn').style.display = 'block';
+                };
+
+                // Cancelar edição
+                window.cancelarEdicao = function() {
+                    editandoId = null;
+                    document.getElementById('form-veterinario').reset();
+                    document.getElementById('submit-btn').textContent = 'Salvar Veterinário';
+                    document.getElementById('cancel-btn').style.display = 'none';
                 };
 
                 // Submit do formulário
@@ -253,6 +265,7 @@
                         });
                         editandoId = null;
                         document.getElementById('submit-btn').textContent = 'Salvar Veterinário';
+                        document.getElementById('cancel-btn').style.display = 'none';
                     } else {
                         await fetch(`${API}/api/veterinarios`, {
                             method: 'POST',
