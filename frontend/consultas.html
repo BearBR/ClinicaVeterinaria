@@ -37,6 +37,7 @@
                     <div class="card-body">
                         <h5 class="card-title mb-4">Nova Consulta</h5>
                         <form id="form-consulta">
+                            <input type="hidden" id="consulta_id" name="consulta_id">
                             <div class="row g-3">
                                 <!-- Pet -->
                                 <div class="col-md-6">
@@ -73,9 +74,10 @@
                                 </div>
 
                                 <!-- Botões -->
-                                <div class="col-12">
-                                    <button type="submit" class="btn btn-primary">Agendar Consulta</button>
-                                    <button type="reset" class="btn btn-secondary">Limpar</button>
+                                <div class="col-12 d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary" id="submit-btn">Agendar Consulta</button>
+                                    <button type="button" class="btn btn-secondary" id="cancel-btn" style="display:none;" onclick="cancelarEdicao()">Cancelar</button>
+                                    <button type="reset" class="btn btn-outline-secondary">Limpar</button>
                                 </div>
                             </div>
                         </form>
@@ -170,6 +172,11 @@
                             ? '<span class="badge bg-success">Agendada</span>'
                             : '<span class="badge bg-secondary">Cancelada</span>';
                         
+                        const botoesAcao = consulta.status === 'agendada'
+                            ? `<button class="btn btn-sm btn-warning me-1" onclick="editarConsulta(${consulta.id})">Editar</button>
+                               <button class="btn btn-sm btn-danger" onclick="cancelarConsulta(${consulta.id})">Cancelar</button>`
+                            : '<span class="text-muted">-</span>';
+                        
                         tabelaConsultas.row.add([
                             `${consulta.data} ${consulta.hora}`,
                             consulta.pet_nome,
@@ -177,7 +184,7 @@
                             consulta.veterinario_nome,
                             consulta.motivo || '-',
                             statusBadge,
-                            `<button class="btn btn-sm btn-danger" onclick="cancelarConsulta(${consulta.id})">Cancelar</button>`
+                            botoesAcao
                         ]);
                     });
                     
@@ -192,6 +199,7 @@
                 e.preventDefault();
                 
                 const formData = new FormData(e.target);
+                const consultaId = formData.get('consulta_id');
                 const data = {
                     pet_id: formData.get('pet_id'),
                     veterinario_id: formData.get('veterinario_id'),
@@ -201,26 +209,88 @@
                 };
                 
                 try {
-                    const response = await fetch(`${API}/api/consultas`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(data)
-                    });
-                    
-                    if (response.ok) {
-                        alert('Consulta agendada com sucesso!');
-                        e.target.reset();
-                        carregarConsultas();
+                    let response;
+                    if (consultaId) {
+                        // Atualizar consulta existente
+                        response = await fetch(`${API}/api/consultas/${consultaId}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        });
+                        
+                        if (response.ok) {
+                            alert('Consulta atualizada com sucesso!');
+                            e.target.reset();
+                            document.getElementById('submit-btn').textContent = 'Agendar Consulta';
+                            document.getElementById('cancel-btn').style.display = 'none';
+                            carregarConsultas();
+                        } else {
+                            alert('Erro ao atualizar consulta');
+                        }
                     } else {
-                        alert('Erro ao agendar consulta');
+                        // Criar nova consulta
+                        response = await fetch(`${API}/api/consultas`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        });
+                        
+                        if (response.ok) {
+                            alert('Consulta agendada com sucesso!');
+                            e.target.reset();
+                            carregarConsultas();
+                        } else {
+                            alert('Erro ao agendar consulta');
+                        }
                     }
                 } catch (error) {
                     console.error('Erro:', error);
-                    alert('Erro ao agendar consulta');
+                    alert('Erro ao processar consulta');
                 }
             });
+
+            // Função para editar consulta
+            window.editarConsulta = async function(id) {
+                try {
+                    const response = await fetch(`${API}/api/consultas/${id}`);
+                    if (!response.ok) {
+                        alert('Erro ao carregar consulta');
+                        return;
+                    }
+                    
+                    const consulta = await response.json();
+                    
+                    // Preencher formulário
+                    document.getElementById('consulta_id').value = consulta.id;
+                    document.getElementById('pet_id').value = consulta.pet_id;
+                    document.getElementById('veterinario_id').value = consulta.veterinario_id;
+                    document.getElementById('data').value = consulta.data;
+                    document.getElementById('hora').value = consulta.hora;
+                    document.getElementById('observacoes').value = consulta.motivo || '';
+                    
+                    // Alterar botão para modo edição
+                    document.getElementById('submit-btn').textContent = 'Atualizar Consulta';
+                    document.getElementById('cancel-btn').style.display = 'block';
+                    
+                    // Scroll para o formulário
+                    document.getElementById('form-consulta').scrollIntoView({ behavior: 'smooth' });
+                } catch (error) {
+                    console.error('Erro:', error);
+                    alert('Erro ao carregar consulta');
+                }
+            };
+
+            // Função para cancelar edição
+            window.cancelarEdicao = function() {
+                document.getElementById('form-consulta').reset();
+                document.getElementById('consulta_id').value = '';
+                document.getElementById('submit-btn').textContent = 'Agendar Consulta';
+                document.getElementById('cancel-btn').style.display = 'none';
+            };
 
             // Função para cancelar consulta
             window.cancelarConsulta = async function(id) {
