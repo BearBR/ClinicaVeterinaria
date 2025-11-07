@@ -66,22 +66,10 @@
                                     <input type="time" class="form-control" id="hora" name="hora" required>
                                 </div>
 
-                                <!-- Tipo de Atendimento -->
-                                <div class="col-md-6">
-                                    <label for="tipo" class="form-label">Tipo de Atendimento</label>
-                                    <select class="form-select" id="tipo" name="tipo" required>
-                                        <option value="">Selecione o tipo...</option>
-                                        <option value="consulta">Consulta</option>
-                                        <option value="vacina">Vacinação</option>
-                                        <option value="cirurgia">Cirurgia</option>
-                                        <option value="exame">Exame</option>
-                                    </select>
-                                </div>
-
-                                <!-- Observações -->
+                                <!-- Observações/Motivo -->
                                 <div class="col-12">
-                                    <label for="observacoes" class="form-label">Observações</label>
-                                    <textarea class="form-control" id="observacoes" name="observacoes" rows="3"></textarea>
+                                    <label for="observacoes" class="form-label">Motivo/Observações</label>
+                                    <textarea class="form-control" id="observacoes" name="observacoes" rows="3" placeholder="Ex: Consulta de rotina, vacinação, etc."></textarea>
                                 </div>
 
                                 <!-- Botões -->
@@ -109,7 +97,7 @@
                                     <th>Pet</th>
                                     <th>Dono</th>
                                     <th>Veterinário</th>
-                                    <th>Tipo</th>
+                                    <th>Motivo</th>
                                     <th>Status</th>
                                     <th>Ações</th>
                                 </tr>
@@ -132,15 +120,19 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const API = 'http://127.0.0.1:5000';
+            let tabelaConsultas;
+
             // Inicializar DataTable
-            $('#tabela-consultas').DataTable({
+            tabelaConsultas = $('#tabela-consultas').DataTable({
                 language: {
                     url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/pt-BR.json'
-                }
+                },
+                order: [[0, 'desc']]
             });
 
             // Carregar pets no select
-            fetch('/api/pets')
+            fetch(`${API}/api/pets`)
                 .then(response => response.json())
                 .then(pets => {
                     const select = document.getElementById('pet_id');
@@ -153,23 +145,106 @@
                 });
 
             // Carregar veterinários no select
-            fetch('/api/veterinarios')
+            fetch(`${API}/api/veterinarios`)
                 .then(response => response.json())
                 .then(veterinarios => {
                     const select = document.getElementById('veterinario_id');
                     veterinarios.forEach(vet => {
                         const option = document.createElement('option');
                         option.value = vet.id;
-                        option.textContent = `${vet.nome} (${vet.especialidade})`;
+                        option.textContent = `${vet.nome} - ${vet.especialidade || 'Clínico Geral'}`;
                         select.appendChild(option);
                     });
                 });
 
+            // Carregar consultas
+            async function carregarConsultas() {
+                try {
+                    const response = await fetch(`${API}/api/consultas`);
+                    const consultas = await response.json();
+                    
+                    tabelaConsultas.clear();
+                    
+                    consultas.forEach(consulta => {
+                        const statusBadge = consulta.status === 'agendada' 
+                            ? '<span class="badge bg-success">Agendada</span>'
+                            : '<span class="badge bg-secondary">Cancelada</span>';
+                        
+                        tabelaConsultas.row.add([
+                            `${consulta.data} ${consulta.hora}`,
+                            consulta.pet_nome,
+                            consulta.dono_nome,
+                            consulta.veterinario_nome,
+                            consulta.motivo || '-',
+                            statusBadge,
+                            `<button class="btn btn-sm btn-danger" onclick="cancelarConsulta(${consulta.id})">Cancelar</button>`
+                        ]);
+                    });
+                    
+                    tabelaConsultas.draw();
+                } catch (error) {
+                    console.error('Erro ao carregar consultas:', error);
+                }
+            }
+
             // Handler para submissão do formulário
-            document.getElementById('form-consulta').addEventListener('submit', function(e) {
+            document.getElementById('form-consulta').addEventListener('submit', async function(e) {
                 e.preventDefault();
-                alert('Funcionalidade em desenvolvimento');
+                
+                const formData = new FormData(e.target);
+                const data = {
+                    pet_id: formData.get('pet_id'),
+                    veterinario_id: formData.get('veterinario_id'),
+                    data: formData.get('data'),
+                    hora: formData.get('hora'),
+                    motivo: formData.get('observacoes') || ''
+                };
+                
+                try {
+                    const response = await fetch(`${API}/api/consultas`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    if (response.ok) {
+                        alert('Consulta agendada com sucesso!');
+                        e.target.reset();
+                        carregarConsultas();
+                    } else {
+                        alert('Erro ao agendar consulta');
+                    }
+                } catch (error) {
+                    console.error('Erro:', error);
+                    alert('Erro ao agendar consulta');
+                }
             });
+
+            // Função para cancelar consulta
+            window.cancelarConsulta = async function(id) {
+                if (!confirm('Deseja realmente cancelar esta consulta?')) return;
+                
+                try {
+                    const response = await fetch(`${API}/api/consultas/${id}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (response.ok) {
+                        alert('Consulta cancelada com sucesso!');
+                        carregarConsultas();
+                    } else {
+                        alert('Erro ao cancelar consulta');
+                    }
+                } catch (error) {
+                    console.error('Erro:', error);
+                    alert('Erro ao cancelar consulta');
+                }
+            };
+
+            // Carregar consultas ao iniciar
+            carregarConsultas();
         });
     </script>
 </body>
