@@ -28,7 +28,7 @@ Sistema completo de gerenciamento para clínicas veterinárias com Flask e Boots
 
 - Python 3.8 ou superior
 
-### Método Simples (Recomendado)- pip (gerenciador de pacotes)
+### Método Simples 
 
 - Git (para clonar o repositório)
 
@@ -38,7 +38,7 @@ Sistema completo de gerenciamento para clínicas veterinárias com Flask e Boots
 
 ```
 
-### ⭐ MÉTODO RECOMENDADO - Windows (Mais Fácil)
+### ⭐ MÉTODO RECOMENDADO - Windows 
 
 O navegador abrirá automaticamente em: http://127.0.0.1:5000
 
@@ -54,19 +54,7 @@ pip install -r requirements.txt3. O navegador abrirá automaticamente em: **http
 
 python INICIAR.py
 
-```**Vantagens:**
 
-- ✅ Abre o navegador automaticamente
-
----- ✅ Reinício automático se o servidor cair
-
-- ✅ Verifica e instala dependências automaticamente
-
-## 📁 Estrutura- ✅ Interface amigável em português
-
-- ✅ Mais estável (sem travamentos)
-
-```- ✅ Não precisa usar terminal
 
 RA13119972-23/
 
@@ -78,7 +66,6 @@ RA13119972-23/
 
 ├── docs/              # Documentação técnica
 
-└── tests/             # Scripts de teste### Método Alternativo 1 - Windows (PowerShell)
 
 ```
 
@@ -112,21 +99,9 @@ pip install -r requirements.txt
 
 ```powershell
 
-**Mais ajuda?** → Veja `docs/SOLUCAO_PROBLEMAS.md`python backend/app_estavel.py
 
 ```
 
-**Testes?** → Veja `docs/RELATORIO_DE_TESTES.md`
-
-Acesse: http://127.0.0.1:5000
-
----
-
----
-
-## 👨‍💻 Desenvolvimento
-
-### Método Alternativo 2 - Com Ambiente Virtual (Windows)
 
 **Desenvolvido por**: Marcio Santos  
 
