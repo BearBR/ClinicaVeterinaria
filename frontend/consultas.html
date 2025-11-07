@@ -262,11 +262,14 @@
                 try {
                     const response = await fetch(`${API}/api/consultas/${id}`);
                     if (!response.ok) {
-                        alert('Erro ao carregar consulta');
+                        const erro = await response.json();
+                        alert('Erro ao carregar consulta: ' + (erro.erro || response.status));
+                        console.error('Erro HTTP:', response.status, erro);
                         return;
                     }
                     
                     const consulta = await response.json();
+                    console.log('Consulta carregada:', consulta);
                     
                     // Preencher formulário
                     document.getElementById('consulta_id').value = consulta.id;
@@ -283,8 +286,8 @@
                     // Scroll para o formulário
                     document.getElementById('form-consulta').scrollIntoView({ behavior: 'smooth' });
                 } catch (error) {
-                    console.error('Erro:', error);
-                    alert('Erro ao carregar consulta');
+                    console.error('Erro detalhado:', error);
+                    alert('Erro ao carregar consulta: ' + error.message);
                 }
             };
 
