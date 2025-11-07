@@ -393,6 +393,62 @@ def create_consulta():
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
 
+@app.get("/api/consultas/<int:consulta_id>")
+def get_consulta(consulta_id):
+    try:
+        with get_conn() as conn:
+            cur = conn.execute("""
+                SELECT c.*, 
+                       p.nome as pet_nome,
+                       d.nome as dono_nome,
+                       v.nome as veterinario_nome
+                FROM consultas c
+                JOIN pets p ON c.pet_id = p.id
+                JOIN donos d ON p.dono_id = d.id
+                JOIN veterinarios v ON c.veterinario_id = v.id
+                WHERE c.id = ?
+            """, (consulta_id,))
+            row = cur.fetchone()
+            if not row:
+                return jsonify({"erro": "consulta não encontrada"}), 404
+            return jsonify(dict(row))
+    except Exception as e:
+        return jsonify({"erro": str(e)}), 500
+
+@app.put("/api/consultas/<int:consulta_id>")
+def update_consulta(consulta_id):
+    try:
+        data = request.get_json() or {}
+        with get_conn() as conn:
+            cur = conn.execute(
+                """
+                UPDATE consultas 
+                SET data=?, hora=?, motivo=?, pet_id=?, veterinario_id=?
+                WHERE id=? AND status='agendada'
+                """,
+                (data.get('data'), data.get('hora'), data.get('motivo'),
+                 data.get('pet_id'), data.get('veterinario_id'), consulta_id)
+            )
+            conn.commit()
+            if cur.rowcount == 0:
+                return jsonify({"erro": "consulta não encontrada ou já cancelada"}), 404
+            
+            # Buscar consulta atualizada
+            cur = conn.execute("""
+                SELECT c.*, 
+                       p.nome as pet_nome,
+                       d.nome as dono_nome,
+                       v.nome as veterinario_nome
+                FROM consultas c
+                JOIN pets p ON c.pet_id = p.id
+                JOIN donos d ON p.dono_id = d.id
+                JOIN veterinarios v ON c.veterinario_id = v.id
+                WHERE c.id = ?
+            """, (consulta_id,))
+            return jsonify(dict(cur.fetchone()))
+    except Exception as e:
+        return jsonify({"erro": str(e)}), 500
+
 @app.delete("/api/consultas/<int:consulta_id>")
 def cancel_consulta(consulta_id):
     try:
