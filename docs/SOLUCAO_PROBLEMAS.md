@@ -1,65 +1,31 @@
-# SOLUÇÃO DE PROBLEMAS
+# PROBLEMAS COMUNS
 
-**Sistema:** Clínica Veterinária  
-**Aluno:** Marcio Santos - RA 13119972
+## Python não encontrado
 
----
-
-## SERVIDOR TRAVANDO
-
-### Causa
-Flask em modo debug no Windows pode travar por conflitos do reloader.
-
-### Solução Recomendada
-Execute o arquivo: `INICIAR_SERVIDOR.bat`
-
-**Vantagens:**
-- Reinício automático
-- Verifica dependências
-- Interface simples
-
-### Alternativa
-Execute: `python backend/app_estavel.py`
-
-Configurações aplicadas:
-- debug=False
-- threaded=True
-- use_reloader=False
-- timeout=10.0
+Instale Python em: https://www.python.org/downloads/  
+Marque "Add Python to PATH" durante instalação.
 
 ---
 
-## PROBLEMAS COMUNS
+## Servidor travando
 
-### Python não encontrado
-Instale Python 3.x e marque "Add Python to PATH" durante instalação.
+Use: `INICIAR_SERVIDOR.bat` (duplo clique)
 
-### Falha nas dependências
-```powershell
-cd c:\Projetos\RA13119972-23
-pip install --upgrade pip
-pip install -r requirements.txt
-```
+Este arquivo reinicia automaticamente se o servidor cair.
 
-### Porta 5000 em uso
-Identifique e finalize o processo:
+---
+
+## Porta 5000 em uso
+
+Feche outros programas usando a porta:
 ```powershell
 netstat -ano | findstr :5000
 taskkill /PID <numero> /F
 ```
 
-### Banco travado
-Feche o servidor e delete `database/clinica.db`. O sistema recria automaticamente.
-
 ---
 
-## USO
+## Banco travado
 
-### Iniciar
-Duplo clique em `INICIAR_SERVIDOR.bat`
-
-### Parar
-Pressione Ctrl+C ou feche o terminal
-
-### Verificar funcionamento
-Acesse: http://127.0.0.1:5000/api/donos
+Feche o servidor e delete: `database/clinica.db`  
+O sistema recria automaticamente ao iniciar.
