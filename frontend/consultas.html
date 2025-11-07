@@ -199,10 +199,10 @@
                 e.preventDefault();
                 
                 const formData = new FormData(e.target);
-                const consultaId = formData.get('consulta_id');
+                const consultaId = document.getElementById('consulta_id').value;
                 const data = {
-                    pet_id: formData.get('pet_id'),
-                    veterinario_id: formData.get('veterinario_id'),
+                    pet_id: parseInt(formData.get('pet_id')),
+                    veterinario_id: parseInt(formData.get('veterinario_id')),
                     data: formData.get('data'),
                     hora: formData.get('hora'),
                     motivo: formData.get('observacoes') || ''
@@ -210,7 +210,7 @@
                 
                 try {
                     let response;
-                    if (consultaId) {
+                    if (consultaId && consultaId !== '') {
                         // Atualizar consulta existente
                         response = await fetch(`${API}/api/consultas/${consultaId}`, {
                             method: 'PUT',
@@ -223,11 +223,13 @@
                         if (response.ok) {
                             alert('Consulta atualizada com sucesso!');
                             e.target.reset();
+                            document.getElementById('consulta_id').value = '';
                             document.getElementById('submit-btn').textContent = 'Agendar Consulta';
                             document.getElementById('cancel-btn').style.display = 'none';
                             carregarConsultas();
                         } else {
-                            alert('Erro ao atualizar consulta');
+                            const erro = await response.json();
+                            alert('Erro ao atualizar consulta: ' + (erro.erro || 'Erro desconhecido'));
                         }
                     } else {
                         // Criar nova consulta
@@ -242,14 +244,16 @@
                         if (response.ok) {
                             alert('Consulta agendada com sucesso!');
                             e.target.reset();
+                            document.getElementById('consulta_id').value = '';
                             carregarConsultas();
                         } else {
-                            alert('Erro ao agendar consulta');
+                            const erro = await response.json();
+                            alert('Erro ao agendar consulta: ' + (erro.erro || 'Erro desconhecido'));
                         }
                     }
                 } catch (error) {
                     console.error('Erro:', error);
-                    alert('Erro ao processar consulta');
+                    alert('Erro ao processar consulta: ' + error.message);
                 }
             });
 
