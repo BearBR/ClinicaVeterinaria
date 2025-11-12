@@ -1,3 +1,7 @@
+"""
+Sistema de Gestão para Clínica Veterinária
+Autor: Marcio Santos - RA 13119972
+"""
 import os
 import sys
 import sqlite3
