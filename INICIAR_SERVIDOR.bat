@@ -49,10 +49,7 @@ echo Para PARAR o sistema, feche esta janela ou pressione Ctrl+C
 echo =========================================================
 echo.
 
-REM Abre o navegador automaticamente após 3 segundos
-start "" cmd /c "timeout /t 3 /nobreak >nul && start http://127.0.0.1:5000"
-
-REM Inicia o servidor
+REM Inicia o servidor (ele ja abre o navegador automaticamente)
 python INICIAR.py
 
 REM Se o servidor parar, pergunta se quer reiniciar
