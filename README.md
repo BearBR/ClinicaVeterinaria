@@ -1,54 +1,65 @@
 ﻿# Sistema Clínica Veterinária
 
-Sistema para gerenciamento de clínicas veterinárias.
+Sistema pra gerenciar clínica de pets.
 
-Desenvolvido por: Marcio Santos - RA 13119972  
-UNIMAR - 2025
-
----
-
-## Como Usar
-
-### 1. Duplo clique em: `INICIAR_SERVIDOR.bat`
-
-### 2. Aguarde o navegador abrir automaticamente
-
-**Pronto!** O sistema está rodando em: http://127.0.0.1:5000
+**Aluno:** Marcio Santos - RA 13119972  
+**UNIMAR** - 2025
 
 ---
 
-## O Que Faz
+## Como rodar
 
-- Cadastro de donos
-- Cadastro de pets
-- Cadastro de veterinários
-- Agendamento de consultas
+1. Dá um duplo clique no arquivo: `INICIAR_SERVIDOR.bat`
+
+2. Espera o navegador abrir sozinho
+
+Pronto! Vai abrir em: http://127.0.0.1:5000
+
+---
+
+## Funcionalidades
+
+- Cadastro de donos (nome, telefone, email, endereço)
+- Cadastro de pets vinculados aos donos (espécie, raça, idade, peso)
+- Cadastro de veterinários com CRMV único
+- Agendamento e gerenciamento de consultas
+
+---
+
+## Tecnologias usadas
+
+- **Backend:** Python com Flask
+- **Frontend:** HTML, CSS, JavaScript
+- **Banco:** SQLite
+- **Framework CSS:** Bootstrap 5
 
 ---
 
 ## Requisitos
 
-- Python 3.8 ou superior
-- Windows (o arquivo .bat funciona apenas no Windows)
+- Python 3.8+
+- Windows
 
-**Instalação do Python:**  
-https://www.python.org/downloads/  
-(Marque "Add Python to PATH" durante a instalação)
+Para instalar o Python: https://www.python.org/downloads/  
+*Importante: marcar a opção "Add Python to PATH"*
 
 ---
 
-## Problemas?
+## Problemas comuns
 
-**Servidor travando?**  
-→ Sempre use `INICIAR_SERVIDOR.bat`
+**O servidor trava?**  
+Use o INICIAR_SERVIDOR.bat
 
-**Python não encontrado?**  
-→ Instale o Python e marque "Add to PATH"
+**Python não está instalado?**  
+Baixe em python.org e instale marcando "Add to PATH"
 
 **Mais ajuda?**  
-→ Veja o arquivo: `docs/SOLUCAO_PROBLEMAS.md`
+Veja: `docs/SOLUCAO_PROBLEMAS.md`
 
 ---
 
-**Repositório:** https://github.com/BearBR/ClinicaVeterinaria
+## Contato
+
+**Email:** msbearbr@gmail.com  
+**GitHub:** https://github.com/BearBR/ClinicaVeterinaria
 
