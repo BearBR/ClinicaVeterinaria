@@ -7,7 +7,7 @@ UNIMAR - 2025
 
 ---
 
-## COMO USAR
+## Como Usar
 
 ### 1. Duplo clique em: `INICIAR_SERVIDOR.bat`
 
