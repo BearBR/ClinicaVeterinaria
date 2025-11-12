@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="utf-8" />
-    <title>Gerenciamento de Veterinários - Clínica Veterinária Unimar</title>
+    <title>Veterinários - Clinica Vet</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <link
@@ -156,97 +156,110 @@
         </div>
 
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const API = 'http://127.0.0.1:5000';
-                let editandoId = null;
+            const API = 'http://127.0.0.1:5000';
+            let editandoId = null;
 
-                async function carregarVeterinarios() {
-                    const r = await fetch(`${API}/api/veterinarios`);
-                    const veterinarios = await r.json();
-                    document.getElementById('tbody-veterinarios').innerHTML =
-                        veterinarios.map(function(v) {
-                            return `
+            function carregarVeterinarios() {
+                fetch(API + '/api/veterinarios')
+                    .then(r => r.json())
+                    .then(vets => {
+                        let html = '';
+                        for(let i = 0; i < vets.length; i++) {
+                            let v = vets[i];
+                            html += `
                                 <tr>
                                     <td>${v.id}</td>
                                     <td><strong>${v.nome}</strong></td>
                                     <td>${v.crmv || ''}</td>
                                     <td>${v.especialidade || ''}</td>
                                     <td>
-                                        ${v.email ? `<div>${v.email}</div>` : ''}
-                                        ${v.telefone ? `<div class="text-muted">${v.telefone}</div>` : ''}
+                                        ${v.email ? '<div>' + v.email + '</div>' : ''}
+                                        ${v.telefone ? '<div class="text-muted">' + v.telefone + '</div>' : ''}
                                     </td>
                                     <td>
-                                        <button class="btn btn-warning btn-sm me-1" onclick="editarVeterinario(${v.id})">
-                                            Editar
-                                        </button>
-                                        <button class="btn btn-danger btn-sm" onclick="deletarVeterinario(${v.id})">
-                                            Excluir
-                                        </button>
+                                        <button class="btn btn-warning btn-sm me-1" onclick="editarVet(${v.id})">Editar</button>
+                                        <button class="btn btn-danger btn-sm" onclick="deletarVet(${v.id})">Excluir</button>
                                     </td>
                                 </tr>
                             `;
-                        }).join('');
+                        }
+                        document.getElementById('tbody-veterinarios').innerHTML = html;
+                    });
+            }
+
+            window.deletarVet = function(id) {
+                if(!confirm('Tem certeza?')) return;
+                
+                fetch(API + '/api/veterinarios/' + id, { method: 'DELETE' })
+                    .then(r => {
+                        if(r.ok) {
+                            alert('Veterinário excluido!');
+                            carregarVeterinarios();
+                        } else {
+                            alert('Erro ao excluir');
+                        }
+                    });
+            };
+
+            window.editarVet = function(id) {
+                fetch(API + '/api/veterinarios/' + id)
+                    .then(r => r.json())
+                    .then(vet => {
+                        let form = document.getElementById('form-veterinario');
+                        form.nome.value = vet.nome || '';
+                        form.crmv.value = vet.crmv || '';
+                        form.especialidade.value = vet.especialidade || '';
+                        form.email.value = vet.email || '';
+                        form.telefone.value = vet.telefone || '';
+                        form.observacoes.value = vet.observacoes || '';
+                        
+                        editandoId = id;
+                        document.getElementById('submit-btn').textContent = 'Atualizar';
+                        document.getElementById('cancel-btn').style.display = 'block';
+                    });
+            };
+
+            window.cancelarEdicao = function() {
+                editandoId = null;
+                document.getElementById('form-veterinario').reset();
+                document.getElementById('submit-btn').textContent = 'Salvar Veterinário';
+                document.getElementById('cancel-btn').style.display = 'none';
+            };
+
+            document.getElementById('form-veterinario').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                let fd = new FormData(e.target);
+                let dados = Object.fromEntries(fd);
+                
+                let url = API + '/api/veterinarios';
+                let metodo = 'POST';
+                
+                if(editandoId) {
+                    url = url + '/' + editandoId;
+                    metodo = 'PUT';
                 }
-
-                window.deletarVeterinario = async function(id) {
-                    if (!confirm('Deseja realmente excluir este veterinário?')) return;
-                    const response = await fetch(`${API}/api/veterinarios/${id}`, { method: 'DELETE' });
-                    if (!response.ok) {
-                        alert('Erro ao excluir');
-                        return;
-                    }
-                    alert('Veterinário excluído!');
-                    carregarVeterinarios();
-                };
-
-                window.editarVeterinario = async function(id) {
-                    const r = await fetch(`${API}/api/veterinarios/${id}`);
-                    const vet = await r.json();
-                    const form = document.getElementById('form-veterinario');
-                    form.nome.value = vet.nome || '';
-                    form.crmv.value = vet.crmv || '';
-                    form.especialidade.value = vet.especialidade || '';
-                    form.email.value = vet.email || '';
-                    form.telefone.value = vet.telefone || '';
-                    form.observacoes.value = vet.observacoes || '';
-                    editandoId = id;
-                    document.getElementById('submit-btn').textContent = 'Atualizar Veterinário';
-                    document.getElementById('cancel-btn').style.display = 'block';
-                };
-
-                window.cancelarEdicao = function() {
-                    editandoId = null;
-                    document.getElementById('form-veterinario').reset();
-                    document.getElementById('submit-btn').textContent = 'Salvar Veterinário';
-                    document.getElementById('cancel-btn').style.display = 'none';
-                };
-
-                document.getElementById('form-veterinario').addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    const fd = new FormData(e.target);
-                    const vetData = Object.fromEntries(fd);
-
-                    if (editandoId) {
-                        await fetch(`${API}/api/veterinarios/${editandoId}`, {
-                            method: 'PUT',
-                            headers: {'Content-Type': 'application/json'},
-                            body: JSON.stringify(vetData)
-                        });
+                
+                fetch(url, {
+                    method: metodo,
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(dados)
+                })
+                .then(r => {
+                    if(r.ok) {
+                        alert('Salvo!');
                         editandoId = null;
                         document.getElementById('submit-btn').textContent = 'Salvar Veterinário';
                         document.getElementById('cancel-btn').style.display = 'none';
+                        e.target.reset();
+                        carregarVeterinarios();
                     } else {
-                        await fetch(`${API}/api/veterinarios`, {
-                            method: 'POST',
-                            headers: {'Content-Type': 'application/json'},
-                            body: JSON.stringify(vetData)
-                        });
+                        alert('Erro ao salvar');
                     }
-
-                    e.target.reset();
-                    carregarVeterinarios();
                 });
+            });
 
+            document.addEventListener('DOMContentLoaded', function() {
                 carregarVeterinarios();
             });
         </script>

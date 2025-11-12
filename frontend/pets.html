@@ -164,24 +164,35 @@
         </div>
 
         <script>
+            const API = 'http://127.0.0.1:5000';
+            let editandoId = null;
+
             document.addEventListener('DOMContentLoaded', function() {
-                const API = 'http://127.0.0.1:5000';
-                let editandoId = null;
+                carregarDonos();
+                carregarPets();
+            });
 
-                async function carregarDonos() {
-                    const r = await fetch(`${API}/api/donos`);
-                    const donos = await r.json();
-                    const select = document.querySelector('select[name=dono_id]');
-                    select.innerHTML = '<option value="">Selecione o dono</option>' +
-                        donos.map(d => `<option value="${d.id}">${d.nome}</option>`).join('');
-                }
+            function carregarDonos() {
+                fetch(API + '/api/donos')
+                    .then(r => r.json())
+                    .then(donos => {
+                        let sel = document.querySelector('select[name=dono_id]');
+                        let html = '<option value="">Selecione o dono</option>';
+                        for(let i = 0; i < donos.length; i++) {
+                            html += '<option value="' + donos[i].id + '">' + donos[i].nome + '</option>';
+                        }
+                        sel.innerHTML = html;
+                    });
+            }
 
-                async function carregarPets() {
-                    const r = await fetch(`${API}/api/pets`);
-                    const pets = await r.json();
-                    document.getElementById('tbody-pets').innerHTML =
-                        pets.map(function(p) {
-                            return `
+            function carregarPets() {
+                fetch(API + '/api/pets')
+                    .then(r => r.json())
+                    .then(pets => {
+                        let html = '';
+                        for(let i = 0; i < pets.length; i++) {
+                            let p = pets[i];
+                            html += `
                                 <tr>
                                     <td>${p.id}</td>
                                     <td><strong>${p.nome}</strong></td>
@@ -191,82 +202,85 @@
                                     <td>${p.idade || ''}</td>
                                     <td>${p.peso ? p.peso + ' kg' : ''}</td>
                                     <td>
-                                        <button class="btn btn-warning btn-sm me-1" onclick="editarPet(${p.id})">
-                                            Editar
-                                        </button>
-                                        <button class="btn btn-danger btn-sm" onclick="deletarPet(${p.id})">
-                                            Excluir
-                                        </button>
+                                        <button class="btn btn-warning btn-sm me-1" onclick="editarPet(${p.id})">Editar</button>
+                                        <button class="btn btn-danger btn-sm" onclick="deletarPet(${p.id})">Excluir</button>
                                     </td>
                                 </tr>
                             `;
-                        }).join('');
-                }
+                        }
+                        document.getElementById('tbody-pets').innerHTML = html;
+                    });
+            }
 
-                window.deletarPet = async function(id) {
-                    if (!confirm('Deseja realmente excluir este pet?')) return;
-                    fetch(`${API}/api/pets/${id}`, { method: 'DELETE' })
-                        .then(response => {
-                            if (!response.ok) {
-                                alert('Erro ao excluir');
-                                return;
-                            }
-                            alert('Pet excluído!');
+            window.deletarPet = function(id) {
+                if(!confirm('Tem certeza que quer excluir?')) return;
+                
+                fetch(API + '/api/pets/' + id, { method: 'DELETE' })
+                    .then(r => {
+                        if(r.ok) {
+                            alert('Pet excluido!');
                             carregarPets();
-                        });
-                };
+                        } else {
+                            alert('Erro');
+                        }
+                    });
+            };
 
-                window.editarPet = async function(id) {
-                    const r = await fetch(`${API}/api/pets/${id}`);
-                    const pet = await r.json();
-                    const form = document.getElementById('form-pet');
-                    form.nome.value = pet.nome || '';
-                    form.dono_id.value = pet.dono_id || '';
-                    form.especie.value = pet.especie || '';
-                    form.raca.value = pet.raca || '';
-                    form.idade.value = pet.idade || '';
-                    form.peso.value = pet.peso || '';
-                    form.observacoes.value = pet.observacoes || '';
-                    editandoId = id;
-                    document.getElementById('submit-btn').textContent = 'Atualizar Pet';
-                    document.getElementById('cancel-btn').style.display = 'block';
-                };
+            window.editarPet = function(id) {
+                fetch(API + '/api/pets/' + id)
+                    .then(r => r.json())
+                    .then(pet => {
+                        let form = document.getElementById('form-pet');
+                        form.nome.value = pet.nome || '';
+                        form.dono_id.value = pet.dono_id || '';
+                        form.especie.value = pet.especie || '';
+                        form.raca.value = pet.raca || '';
+                        form.idade.value = pet.idade || '';
+                        form.peso.value = pet.peso || '';
+                        form.observacoes.value = pet.observacoes || '';
+                        
+                        editandoId = id;
+                        document.getElementById('submit-btn').textContent = 'Atualizar Pet';
+                        document.getElementById('cancel-btn').style.display = 'block';
+                    });
+            };
 
-                window.cancelarEdicao = function() {
-                    editandoId = null;
-                    document.getElementById('form-pet').reset();
-                    document.getElementById('submit-btn').textContent = 'Salvar Pet';
-                    document.getElementById('cancel-btn').style.display = 'none';
-                };
+            window.cancelarEdicao = function() {
+                editandoId = null;
+                document.getElementById('form-pet').reset();
+                document.getElementById('submit-btn').textContent = 'Salvar Pet';
+                document.getElementById('cancel-btn').style.display = 'none';
+            };
 
-                document.getElementById('form-pet').addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    const fd = new FormData(e.target);
-                    const petData = Object.fromEntries(fd);
-
-                    if (editandoId) {
-                        await fetch(`${API}/api/pets/${editandoId}`, {
-                            method: 'PUT',
-                            headers: {'Content-Type': 'application/json'},
-                            body: JSON.stringify(petData)
-                        });
+            document.getElementById('form-pet').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                let fd = new FormData(e.target);
+                let dados = Object.fromEntries(fd);
+                
+                let url = API + '/api/pets';
+                let metodo = 'POST';
+                
+                if(editandoId) {
+                    url = url + '/' + editandoId;
+                    metodo = 'PUT';
+                }
+                
+                fetch(url, {
+                    method: metodo,
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(dados)
+                })
+                .then(r => {
+                    if(r.ok) {
+                        alert('Salvo!');
                         editandoId = null;
                         document.getElementById('submit-btn').textContent = 'Salvar Pet';
                         document.getElementById('cancel-btn').style.display = 'none';
-                    } else {
-                        await fetch(`${API}/api/pets`, {
-                            method: 'POST',
-                            headers: {'Content-Type': 'application/json'},
-                            body: JSON.stringify(petData)
-                        });
+                        e.target.reset();
+                        carregarPets();
                     }
-
-                    e.target.reset();
-                    carregarPets();
                 });
-
-                carregarDonos();
-                carregarPets();
             });
         </script>
     </main>

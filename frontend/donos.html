@@ -95,73 +95,86 @@
     </main>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const API = 'http://127.0.0.1:5000';
-            let editandoId = null;
+        // API do backend
+        const API = 'http://127.0.0.1:5000';
+        let editandoId = null;
 
-            async function carregarDonos() {
-                const r = await fetch(`${API}/api/donos`);
-                const dados = await r.json();
-                document.getElementById('tbody-donos').innerHTML =
-                    dados.map(function(d) {
-                        return `
-                            <tr data-id="${d.id}">
-                                <td>${d.id}</td>
-                                <td>
-                                    <strong>${d.nome}</strong><br />
-                                    <span class="text-muted">${d.email || ''}</span>
-                                </td>
-                                <td>${d.telefone || ''}</td>
-                                <td>${d.endereco || ''}</td>
-                                <td>${d.cep || ''}</td>
-                                <td>
-                                    <button class="btn btn-danger btn-sm me-1" onclick="deletarDono(${d.id})">Excluir</button>
-                                    <button class="btn btn-warning btn-sm" onclick="editarDono(${d.id})">Editar</button>
-                                </td>
-                            </tr>
-                        `;
-                    }).join('');
+        // funcao pra carregar donos
+        async function carregarDonos() {
+            const r = await fetch(`${API}/api/donos`);
+            const dados = await r.json();
+            
+            let html = '';
+            for(let i = 0; i < dados.length; i++) {
+                let d = dados[i];
+                html += `
+                    <tr data-id="${d.id}">
+                        <td>${d.id}</td>
+                        <td>
+                            <strong>${d.nome}</strong><br />
+                            <span class="text-muted">${d.email || ''}</span>
+                        </td>
+                        <td>${d.telefone || ''}</td>
+                        <td>${d.endereco || ''}</td>
+                        <td>${d.cep || ''}</td>
+                        <td>
+                            <button class="btn btn-danger btn-sm me-1" onclick="deletarDono(${d.id})">Excluir</button>
+                            <button class="btn btn-warning btn-sm" onclick="editarDono(${d.id})">Editar</button>
+                        </td>
+                    </tr>
+                `;
             }
+            document.getElementById('tbody-donos').innerHTML = html;
+        }
 
-            window.deletarDono = async function(id) {
-                if (!confirm('Deseja realmente deletar este dono?')) return;
-                fetch(`${API}/api/donos/${id}`, { method: 'DELETE' })
-                    .then(response => {
-                        if (!response.ok) {
-                            alert('Erro ao deletar');
-                            return;
-                        }
-                        alert('Dono deletado!');
-                        carregarDonos();
-                    });
-            };
+        // deleta um dono
+        window.deletarDono = async function(id) {
+            if (!confirm('Tem certeza?')) return;
+            
+            fetch(`${API}/api/donos/${id}`, { method: 'DELETE' })
+                .then(response => {
+                    if (!response.ok) {
+                        alert('Erro ao deletar');
+                        return;
+                    }
+                    alert('Deletado!');
+                    carregarDonos();
+                });
+        };
 
-            window.editarDono = async function(id) {
-                const r = await fetch(`${API}/api/donos/${id}`);
-                const dono = await r.json();
-                document.querySelector('input[name=nome]').value = dono.nome || '';
-                document.querySelector('input[name=telefone]').value = dono.telefone || '';
-                document.querySelector('input[name=email]').value = dono.email || '';
-                document.querySelector('input[name=endereco]').value = dono.endereco || '';
-                document.querySelector('input[name=cep]').value = dono.cep || '';
-                editandoId = id;
-                document.getElementById('submit-btn').textContent = 'Alterar';
-                document.getElementById('cancel-btn').style.display = 'block';
-            };
+        window.editarDono = async function(id) {
+            const r = await fetch(`${API}/api/donos/${id}`);
+            const dono = await r.json();
+            
+            // preenche o form
+            document.querySelector('input[name=nome]').value = dono.nome || '';
+            document.querySelector('input[name=telefone]').value = dono.telefone || '';
+            document.querySelector('input[name=email]').value = dono.email || '';
+            document.querySelector('input[name=endereco]').value = dono.endereco || '';
+            document.querySelector('input[name=cep]').value = dono.cep || '';
+            
+            editandoId = id;
+            document.getElementById('submit-btn').textContent = 'Alterar';
+            document.getElementById('cancel-btn').style.display = 'block';
+        };
 
-            window.cancelarEdicao = function() {
-                editandoId = null;
-                document.getElementById('form-dono').reset();
-                document.getElementById('submit-btn').textContent = 'Salvar';
-                document.getElementById('cancel-btn').style.display = 'none';
-            };
+        window.cancelarEdicao = function() {
+            editandoId = null;
+            document.getElementById('form-dono').reset();
+            document.getElementById('submit-btn').textContent = 'Salvar';
+            document.getElementById('cancel-btn').style.display = 'none';
+        };
 
+        // submit do formulario
+        document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('form-dono').addEventListener('submit', async function(e) {
                 e.preventDefault();
+                
                 const fd = new FormData(e.target);
                 const donoData = Object.fromEntries(fd);
 
                 if (editandoId) {
+                    // atualiza
                     await fetch(`${API}/api/donos/${editandoId}`, {
                         method: 'PUT',
                         headers: {'Content-Type': 'application/json'},
@@ -171,6 +184,7 @@
                     document.getElementById('submit-btn').textContent = 'Salvar';
                     document.getElementById('cancel-btn').style.display = 'none';
                 } else {
+                    // cria novo
                     await fetch(`${API}/api/donos`, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
@@ -198,7 +212,7 @@
 
     <footer class="bg-light text-center py-3 mt-5">
         <div class="container">
-            <p class="text-muted small mb-0">Desenvolvido por: Marcio Santos</p>
+            <p class="text-muted small mb-0">Trabalho de Programação Web - Marcio Santos</p>
         </div>
     </footer>
 </body>
