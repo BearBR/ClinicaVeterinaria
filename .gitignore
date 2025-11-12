@@ -6,4 +6,4 @@ __pycache__/
 database/clinica.db
 *.log
 .env
-# If you prefer to include the DB for delivery, remove the database/clinica.db line above
+.vs/
