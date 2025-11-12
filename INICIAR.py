@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Script de inicialização do servidor Flask
+"""
 import os
 import webbrowser
 import time
