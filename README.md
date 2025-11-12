@@ -17,7 +17,7 @@ UNIMAR - 2025
 
 ---
 
-## O QUE FAZ
+## O Que Faz
 
 - Cadastro de donos
 - Cadastro de pets
