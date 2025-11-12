@@ -1,6 +1,6 @@
 ﻿# Sistema Clínica Veterinária
 
-Sistema de gerenciamento para clínicas veterinárias.
+Sistema para gerenciamento de clínicas veterinárias.
 
 Desenvolvido por: Marcio Santos - RA 13119972  
 UNIMAR - 2025
