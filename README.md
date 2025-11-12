@@ -26,7 +26,7 @@ UNIMAR - 2025
 
 ---
 
-## REQUISITOS
+## Requisitos
 
 - Python 3.8 ou superior
 - Windows (o arquivo .bat funciona apenas no Windows)
@@ -37,7 +37,7 @@ https://www.python.org/downloads/
 
 ---
 
-## PROBLEMAS?
+## Problemas?
 
 **Servidor travando?**  
 → Sempre use `INICIAR_SERVIDOR.bat`
