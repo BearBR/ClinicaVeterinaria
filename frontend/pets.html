@@ -205,13 +205,15 @@
 
                 window.deletarPet = async function(id) {
                     if (!confirm('Deseja realmente excluir este pet?')) return;
-                    const response = await fetch(`${API}/api/pets/${id}`, { method: 'DELETE' });
-                    if (!response.ok) {
-                        alert('Erro ao excluir');
-                        return;
-                    }
-                    alert('Pet excluído!');
-                    carregarPets();
+                    fetch(`${API}/api/pets/${id}`, { method: 'DELETE' })
+                        .then(response => {
+                            if (!response.ok) {
+                                alert('Erro ao excluir');
+                                return;
+                            }
+                            alert('Pet excluído!');
+                            carregarPets();
+                        });
                 };
 
                 window.editarPet = async function(id) {

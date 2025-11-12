@@ -1,7 +1,3 @@
-"""
-Sistema de Gestão para Clínica Veterinária
-Autor: Marcio Santos - RA 13119972
-"""
 import os
 import sys
 import sqlite3
@@ -23,7 +19,7 @@ app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 
 def get_conn():
-    """Cria conexão com timeout para evitar travamentos"""
+    # Conecta ao banco de dados
     try:
         conn = sqlite3.connect(DB_PATH, timeout=10.0)
         conn.row_factory = sqlite3.Row
@@ -33,7 +29,7 @@ def get_conn():
         raise
 
 def init_database():
-    """Inicializa o banco de dados se não existir"""
+    # Cria o banco se nao existir
     try:
         if not os.path.exists(DB_PATH):
             print("[INFO] Criando banco de dados...")

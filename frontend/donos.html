@@ -125,13 +125,15 @@
 
             window.deletarDono = async function(id) {
                 if (!confirm('Deseja realmente deletar este dono?')) return;
-                const response = await fetch(`${API}/api/donos/${id}`, { method: 'DELETE' });
-                if (!response.ok) {
-                    alert('Erro ao deletar');
-                    return;
-                }
-                alert('Dono deletado!');
-                carregarDonos();
+                fetch(`${API}/api/donos/${id}`, { method: 'DELETE' })
+                    .then(response => {
+                        if (!response.ok) {
+                            alert('Erro ao deletar');
+                            return;
+                        }
+                        alert('Dono deletado!');
+                        carregarDonos();
+                    });
             };
 
             window.editarDono = async function(id) {
