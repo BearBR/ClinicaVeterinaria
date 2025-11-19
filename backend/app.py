@@ -7,6 +7,7 @@ import threading
 from flask import Flask, jsonify, request, send_from_directory, abort
 from flask_cors import CORS
 
+# caminhos dos arquivos
 BASE_DIR = os.path.dirname(__file__)
 DB_PATH = os.path.join(BASE_DIR, '..', 'database', 'clinica.db')
 SCHEMA_PATH = os.path.join(BASE_DIR, '..', 'database', 'schema.sql')
@@ -15,15 +16,17 @@ FRONT_DIR = os.path.join(BASE_DIR, '..', 'frontend')
 app = Flask(__name__, static_folder=FRONT_DIR, static_url_path='')
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-# config
+# configuracoes basicas
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 
+# funcao pra pegar conexao com banco
 def get_conn():
     conn = sqlite3.connect(DB_PATH, timeout=10.0)
     conn.row_factory = sqlite3.Row
     return conn
 
+# inicializa o banco de dados
 def init_database():
     # cria banco se nao tiver ainda
     if not os.path.exists(DB_PATH):
@@ -73,6 +76,7 @@ def page_veterinarios():
 def page_consultas():
     return send_from_directory(FRONT_DIR, 'consultas.html')
 
+# rota pra inicializar banco
 @app.route('/api/init-db')
 def init_db():
     try:
@@ -85,7 +89,7 @@ def init_db():
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
-# rotas de donos
+# daqui pra baixo é tudo de donos
 @app.get("/api/donos")
 def list_donos():
     conn = get_conn()
@@ -107,7 +111,7 @@ def get_dono(dono_id):
 @app.post("/api/donos")
 def create_dono():
     data = request.get_json()
-    # pega os dados do form
+    # pega os dados que vieram
     nome = data.get("nome")
     tel = data.get("telefone")
     email = data.get("email")
@@ -125,7 +129,7 @@ def create_dono():
     conn.commit()
     new_id = cur.lastrowid
     
-    # busca o dono criado
+    # agora busca ele de novo pra retornar
     cur = conn.execute("SELECT * FROM donos WHERE id = ?", (new_id,))
     resultado = dict(cur.fetchone())
     conn.close()
@@ -135,7 +139,7 @@ def create_dono():
 def update_dono(dono_id):
     data = request.get_json()
     conn = get_conn()
-    # atualiza os dados
+    # atualiza
     cur = conn.execute(
         "UPDATE donos SET nome=?, telefone=?, email=?, endereco=?, cep=? WHERE id=?",
         (data.get("nome"), data.get("telefone"), data.get("email"),
@@ -163,11 +167,11 @@ def delete_dono(dono_id):
         return jsonify({"erro": "nao encontrado"}), 404
     return jsonify({"deleted": True})
 
-# pets
+# agora vem os pets
 @app.get("/api/pets")
 def list_pets():
     conn = get_conn()
-    # busca pets com nome do dono
+    # pega os pets e ja traz o nome do dono junto
     cur = conn.execute("""
         SELECT p.*, d.nome as dono_nome 
         FROM pets p 
@@ -202,7 +206,7 @@ def create_pet():
     peso = data.get("peso")
     dono = data.get("dono_id")
 
-    # validacao basica
+    # ve se ta faltando alguma coisa
     if not nome or not especie or not dono:
         return jsonify({"erro": "faltam campos obrigatorios"}), 400
 
@@ -250,7 +254,7 @@ def delete_pet(pet_id):
         return jsonify({"erro": "nao achei"}), 404
     return jsonify({"deleted": True})
 
-# veterinarios
+# parte dos veterinarios
 @app.get("/api/veterinarios")
 def list_veterinarios():
     conn = get_conn()
@@ -283,7 +287,7 @@ def create_veterinario():
         return jsonify({"erro": "nome e crmv obrigatorios"}), 400
 
     conn = get_conn()
-    # verifica se ja tem esse crmv
+    # ve se esse crmv ja existe
     cur = conn.execute("SELECT id FROM veterinarios WHERE crmv = ?", (crmv,))
     if cur.fetchone():
         conn.close()
@@ -306,7 +310,7 @@ def update_veterinario(vet_id):
     data = request.get_json()
     conn = get_conn()
     
-    # verifica crmv duplicado
+    # checa se o crmv nao ta repetido
     if data.get("crmv"):
         cur = conn.execute(
             "SELECT id FROM veterinarios WHERE crmv = ? AND id != ?", 
@@ -343,11 +347,11 @@ def delete_veterinario(vet_id):
         return jsonify({"erro": "nao achado"}), 404
     return jsonify({"deleted": True})
 
-# consultas
+# consultas aqui
 @app.get("/api/consultas")
 def list_consultas():
     conn = get_conn()
-    # query grande com joins pra pegar tudo
+    # essa query é grande mas pega tudo que precisa
     cur = conn.execute("""
         SELECT c.*, 
                p.nome as pet_nome,
@@ -367,7 +371,7 @@ def list_consultas():
 def create_consulta():
     data = request.get_json()
     
-    # valida campos obrigatorios
+    # tem que ter esses campos senao nao da
     if not data.get('data') or not data.get('hora') or not data.get('pet_id') or not data.get('veterinario_id'):
         return jsonify({"erro": "faltam campos"}), 400
 
@@ -379,7 +383,7 @@ def create_consulta():
     conn.commit()
     consulta_id = cur.lastrowid
     
-    # busca a consulta criada com os joins
+    # busca a consulta que acabou de criar
     cur = conn.execute("""
         SELECT c.*, 
                p.nome as pet_nome,
@@ -423,7 +427,7 @@ def update_consulta(consulta_id):
     data = request.get_json()
     conn = get_conn()
     
-    # só atualiza se tiver agendada ainda
+    # so atualiza se ainda nao cancelou
     cur = conn.execute(
         """
         UPDATE consultas 
@@ -439,7 +443,7 @@ def update_consulta(consulta_id):
         conn.close()
         return jsonify({"erro": "nao achou ou ja foi cancelada"}), 404
     
-    # pega consulta atualizada
+    # busca de novo pra retornar
     cur = conn.execute("""
         SELECT c.*, 
                p.nome as pet_nome,
@@ -470,7 +474,7 @@ def cancel_consulta(consulta_id):
         return jsonify({"erro": "consulta nao existe"}), 404
     return jsonify({"status": "cancelada"})
 
-# tratamento de erro
+# tratamento dos erros
 @app.errorhandler(404)
 def not_found(e):
     return jsonify({"erro": "nao encontrado"}), 404
@@ -493,14 +497,14 @@ if __name__ == "__main__":
     print("Aperte CTRL+C pra parar")
     print()
     
-    # abre navegador depois de 2 seg
+    # espera 2 seg e abre o navegador
     def abrir_browser():
         time.sleep(2)
         webbrowser.open('http://127.0.0.1:5000')
     
     threading.Thread(target=abrir_browser, daemon=True).start()
     
-    # inicia servidor
+    # roda o servidor
     app.run(
         host='127.0.0.1',
         port=5000,
