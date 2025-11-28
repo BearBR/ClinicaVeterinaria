@@ -26,7 +26,8 @@ CREATE TABLE IF NOT EXISTS veterinarios (
   crmv TEXT UNIQUE NOT NULL,
   especialidade TEXT,
   telefone TEXT,
-  email TEXT
+  email TEXT,
+  observacoes TEXT
 );
 
 CREATE TABLE IF NOT EXISTS consultas (
@@ -39,4 +40,11 @@ CREATE TABLE IF NOT EXISTS consultas (
   veterinario_id INTEGER NOT NULL,
   FOREIGN KEY (pet_id) REFERENCES pets(id) ON DELETE CASCADE,
   FOREIGN KEY (veterinario_id) REFERENCES veterinarios(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS usuarios (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username TEXT UNIQUE NOT NULL,
+  password TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'user'
 );

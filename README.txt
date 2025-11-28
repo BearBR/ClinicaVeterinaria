@@ -30,9 +30,20 @@ COMO RODAR O SISTEMA
    http://127.0.0.1:5000
 
 
+LOGIN DO SISTEMA
+----------------
+
+Usuario: admin
+Senha: admin123
+
+O usuario admin pode criar e gerenciar outros usuarios.
+
+
 FUNCIONALIDADES
 ---------------
 
+- Sistema de login e autenticacao
+- Gerenciamento de usuarios (admin)
 - Cadastro de donos de pets
 - Cadastro de animais
 - Cadastro de veterinarios  

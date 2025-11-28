@@ -1,15 +1,14 @@
 <!doctype html>
 <html lang="pt-br">
+
 <head>
     <meta charset="utf-8" />
     <title>Gerenciamento de Pets - Clínica Veterinária Unimar</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
 </head>
+
 <body class="bg-light">
     <nav class="navbar navbar-expand-lg navbar-dark bg-success">
         <div class="container-fluid">
@@ -17,16 +16,11 @@
             <a class="navbar-brand" href="/">
                 🐾 Clínica Veterinária Unimar
             </a>
-            
-            <button 
-                class="navbar-toggler" 
-                type="button" 
-                data-bs-toggle="collapse" 
-                data-bs-target="#navbarNav"
-            >
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            
+
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
                     <li class="nav-item">
@@ -57,14 +51,9 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Nome do Pet</label>
-                        <input
-                            class="form-control"
-                            name="nome"
-                            placeholder="Nome do animal"
-                            required
-                        />
+                        <input class="form-control" name="nome" placeholder="Nome do animal" required />
                     </div>
-                    
+
                     <div class="col-md-6">
                         <label class="form-label">Dono</label>
                         <select class="form-select" name="dono_id" required>
@@ -86,51 +75,31 @@
 
                     <div class="col-md-4">
                         <label class="form-label">Raça</label>
-                        <input
-                            class="form-control"
-                            name="raca"
-                            placeholder="Raça do animal"
-                        />
+                        <input class="form-control" name="raca" placeholder="Raça do animal" />
                     </div>
 
                     <div class="col-md-2">
                         <label class="form-label">Idade (anos)</label>
-                        <input
-                            type="number"
-                            class="form-control"
-                            name="idade"
-                            min="0"
-                            max="30"
-                        />
+                        <input type="number" class="form-control" name="idade" min="0" max="30" />
                     </div>
 
                     <div class="col-md-2">
                         <label class="form-label">Peso (kg)</label>
-                        <input
-                            type="number"
-                            class="form-control"
-                            name="peso"
-                            step="0.1"
-                            min="0"
-                            max="100"
-                        />
+                        <input type="number" class="form-control" name="peso" step="0.1" min="0" max="100" />
                     </div>
 
                     <div class="col-12">
                         <label class="form-label">Observações</label>
-                        <textarea
-                            class="form-control"
-                            name="observacoes"
-                            rows="2"
-                            placeholder="Observações importantes sobre o pet"
-                        ></textarea>
+                        <textarea class="form-control" name="observacoes" rows="2"
+                            placeholder="Observações importantes sobre o pet"></textarea>
                     </div>
 
                     <div class="col-12 d-grid gap-2">
                         <button class="btn btn-success" type="submit" id="submit-btn">
                             Salvar Pet
                         </button>
-                        <button class="btn btn-secondary" type="button" id="cancel-btn" style="display:none;" onclick="cancelarEdicao()">
+                        <button class="btn btn-secondary" type="button" id="cancel-btn" style="display:none;"
+                            onclick="cancelarEdicao()">
                             Cancelar
                         </button>
                     </div>
@@ -167,7 +136,12 @@
             const API = 'http://127.0.0.1:5000';
             let editandoId = null;
 
-            document.addEventListener('DOMContentLoaded', function() {
+            // auth check
+            fetch('/api/me').then(r => {
+                if (!r.ok) window.location.href = '/login.html';
+            });
+
+            document.addEventListener('DOMContentLoaded', function () {
                 carregarDonos();
                 carregarPets();
             });
@@ -178,7 +152,7 @@
                     .then(donos => {
                         let sel = document.querySelector('select[name=dono_id]');
                         let html = '<option value="">Selecione o dono</option>';
-                        for(let i = 0; i < donos.length; i++) {
+                        for (let i = 0; i < donos.length; i++) {
                             html += '<option value="' + donos[i].id + '">' + donos[i].nome + '</option>';
                         }
                         sel.innerHTML = html;
@@ -190,7 +164,7 @@
                     .then(r => r.json())
                     .then(pets => {
                         let html = '';
-                        for(let i = 0; i < pets.length; i++) {
+                        for (let i = 0; i < pets.length; i++) {
                             let p = pets[i];
                             html += `
                                 <tr>
@@ -212,12 +186,12 @@
                     });
             }
 
-            window.deletarPet = function(id) {
-                if(!confirm('Tem certeza que quer excluir?')) return;
-                
+            window.deletarPet = function (id) {
+                if (!confirm('Tem certeza que quer excluir?')) return;
+
                 fetch(API + '/api/pets/' + id, { method: 'DELETE' })
                     .then(r => {
-                        if(r.ok) {
+                        if (r.ok) {
                             alert('Pet excluido!');
                             carregarPets();
                         } else {
@@ -226,7 +200,7 @@
                     });
             };
 
-            window.editarPet = function(id) {
+            window.editarPet = function (id) {
                 fetch(API + '/api/pets/' + id)
                     .then(r => r.json())
                     .then(pet => {
@@ -238,53 +212,54 @@
                         form.idade.value = pet.idade || '';
                         form.peso.value = pet.peso || '';
                         form.observacoes.value = pet.observacoes || '';
-                        
+
                         editandoId = id;
                         document.getElementById('submit-btn').textContent = 'Atualizar Pet';
                         document.getElementById('cancel-btn').style.display = 'block';
                     });
             };
 
-            window.cancelarEdicao = function() {
+            window.cancelarEdicao = function () {
                 editandoId = null;
                 document.getElementById('form-pet').reset();
                 document.getElementById('submit-btn').textContent = 'Salvar Pet';
                 document.getElementById('cancel-btn').style.display = 'none';
             };
 
-            document.getElementById('form-pet').addEventListener('submit', function(e) {
+            document.getElementById('form-pet').addEventListener('submit', function (e) {
                 e.preventDefault();
-                
+
                 let fd = new FormData(e.target);
                 let dados = Object.fromEntries(fd);
-                
+
                 let url = API + '/api/pets';
                 let metodo = 'POST';
-                
-                if(editandoId) {
+
+                if (editandoId) {
                     url = url + '/' + editandoId;
                     metodo = 'PUT';
                 }
-                
+
                 fetch(url, {
                     method: metodo,
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(dados)
                 })
-                .then(r => {
-                    if(r.ok) {
-                        alert('Salvo!');
-                        editandoId = null;
-                        document.getElementById('submit-btn').textContent = 'Salvar Pet';
-                        document.getElementById('cancel-btn').style.display = 'none';
-                        e.target.reset();
-                        carregarPets();
-                    }
-                });
+                    .then(r => {
+                        if (r.ok) {
+                            alert('Salvo!');
+                            editandoId = null;
+                            document.getElementById('submit-btn').textContent = 'Salvar Pet';
+                            document.getElementById('cancel-btn').style.display = 'none';
+                            e.target.reset();
+                            carregarPets();
+                        }
+                    });
             });
         </script>
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

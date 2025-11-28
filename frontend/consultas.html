@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Consultas - Clinica Vet</title>
-    
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 </head>
+
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
         <div class="container-fluid">
@@ -63,12 +65,15 @@
 
                                 <div class="col-12">
                                     <label for="observacoes" class="form-label">Motivo/Observações</label>
-                                    <textarea class="form-control" id="observacoes" name="observacoes" rows="3" placeholder="Ex: Consulta de rotina, vacinação, etc."></textarea>
+                                    <textarea class="form-control" id="observacoes" name="observacoes" rows="3"
+                                        placeholder="Ex: Consulta de rotina, vacinação, etc."></textarea>
                                 </div>
 
                                 <div class="col-12 d-grid gap-2">
-                                    <button type="submit" class="btn btn-primary" id="submit-btn">Agendar Consulta</button>
-                                    <button type="button" class="btn btn-secondary" id="cancel-btn" style="display:none;" onclick="cancelarEdicao()">Cancelar</button>
+                                    <button type="submit" class="btn btn-primary" id="submit-btn">Agendar
+                                        Consulta</button>
+                                    <button type="button" class="btn btn-secondary" id="cancel-btn"
+                                        style="display:none;" onclick="cancelarEdicao()">Cancelar</button>
                                     <button type="reset" class="btn btn-outline-secondary">Limpar</button>
                                 </div>
                             </div>
@@ -103,17 +108,21 @@
         </div>
     </main>
 
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
-    
+
     <script>
-        const API = 'http://127.0.0.1:5000';
+        // Auth check
+        fetch('/api/me').then(r => {
+            if (!r.ok) window.location.href = '/login.html';
+        });
+
+        const API = '';
         let tabela;
 
-        document.addEventListener('DOMContentLoaded', function() {
-            // init tabela
+        $(document).ready(function () {
             tabela = $('#tbl').DataTable({
                 language: {
                     url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/pt-BR.json'
@@ -126,7 +135,7 @@
                 .then(r => r.json())
                 .then(pets => {
                     let sel = document.getElementById('pet_id');
-                    for(let i = 0; i < pets.length; i++) {
+                    for (let i = 0; i < pets.length; i++) {
                         let opt = document.createElement('option');
                         opt.value = pets[i].id;
                         opt.textContent = pets[i].nome + ' (' + pets[i].dono_nome + ')';
@@ -139,7 +148,7 @@
                 .then(r => r.json())
                 .then(vets => {
                     let sel = document.getElementById('veterinario_id');
-                    for(let i = 0; i < vets.length; i++) {
+                    for (let i = 0; i < vets.length; i++) {
                         let opt = document.createElement('option');
                         opt.value = vets[i].id;
                         opt.textContent = vets[i].nome + ' - ' + (vets[i].especialidade || 'Clínico Geral');
@@ -151,19 +160,17 @@
                 try {
                     const response = await fetch(`${API}/api/consultas`);
                     const consultas = await response.json();
-                    
                     tabela.clear();
-                    
                     consultas.forEach(consulta => {
-                        const statusBadge = consulta.status === 'agendada' 
+                        const statusBadge = consulta.status === 'agendada'
                             ? '<span class="badge bg-success">Agendada</span>'
                             : '<span class="badge bg-secondary">Cancelada</span>';
-                        
+
                         const botoesAcao = consulta.status === 'agendada'
                             ? `<button class="btn btn-sm btn-warning me-1" onclick="editarConsulta(${consulta.id})">Editar</button>
-                               <button class="btn btn-sm btn-danger" onclick="cancelarConsulta(${consulta.id})">Cancelar</button>`
+                           <button class="btn btn-sm btn-danger" onclick="cancelarConsulta(${consulta.id})">Cancelar</button>`
                             : '<span class="text-muted">-</span>';
-                        
+
                         tabela.row.add([
                             `${consulta.data} ${consulta.hora}`,
                             consulta.pet_nome,
@@ -174,16 +181,16 @@
                             botoesAcao
                         ]);
                     });
-                    
+
                     tabela.draw();
                 } catch (error) {
                     console.error('Erro:', error);
                 }
             }
 
-            document.getElementById('form-consulta').addEventListener('submit', async function(e) {
+            document.getElementById('form-consulta').addEventListener('submit', async function (e) {
                 e.preventDefault();
-                
+
                 const formData = new FormData(e.target);
                 const consultaId = document.getElementById('consulta_id').value;
                 const data = {
@@ -193,7 +200,7 @@
                     hora: formData.get('hora'),
                     motivo: formData.get('observacoes')
                 };
-                
+
                 try {
                     let response;
                     if (consultaId && consultaId !== '') {
@@ -204,7 +211,7 @@
                             },
                             body: JSON.stringify(data)
                         });
-                        
+
                         if (response.ok) {
                             alert('Consulta atualizada!');
                             e.target.reset();
@@ -223,7 +230,7 @@
                             },
                             body: JSON.stringify(data)
                         });
-                        
+
                         if (response.ok) {
                             alert('Consulta agendada!');
                             e.target.reset();
@@ -238,42 +245,42 @@
                 }
             });
 
-            window.editarConsulta = async function(id) {
+            window.editarConsulta = async function (id) {
                 const response = await fetch(`${API}/api/consultas/${id}`);
                 if (!response.ok) {
                     alert('Erro ao carregar consulta');
                     return;
                 }
-                
+
                 const consulta = await response.json();
-                
+
                 document.getElementById('consulta_id').value = consulta.id;
                 document.getElementById('pet_id').value = consulta.pet_id;
                 document.getElementById('veterinario_id').value = consulta.veterinario_id;
                 document.getElementById('data').value = consulta.data;
                 document.getElementById('hora').value = consulta.hora;
                 document.getElementById('observacoes').value = consulta.motivo || '';
-                
+
                 document.getElementById('submit-btn').textContent = 'Atualizar Consulta';
                 document.getElementById('cancel-btn').style.display = 'block';
-                
+
                 document.getElementById('form-consulta').scrollIntoView({ behavior: 'smooth' });
             };
 
-            window.cancelarEdicao = function() {
+            window.cancelarEdicao = function () {
                 document.getElementById('form-consulta').reset();
                 document.getElementById('consulta_id').value = '';
                 document.getElementById('submit-btn').textContent = 'Agendar Consulta';
                 document.getElementById('cancel-btn').style.display = 'none';
             };
 
-            window.cancelarConsulta = async function(id) {
+            window.cancelarConsulta = async function (id) {
                 if (!confirm('Deseja realmente cancelar esta consulta?')) return;
-                
+
                 const response = await fetch(`${API}/api/consultas/${id}`, {
                     method: 'DELETE'
                 });
-                
+
                 if (response.ok) {
                     alert('Consulta cancelada!');
                     carregarConsultas();
@@ -286,4 +293,5 @@
         });
     </script>
 </body>
+
 </html>

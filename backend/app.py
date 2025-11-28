@@ -19,6 +19,7 @@ CORS(app, resources={r"/api/*": {"origins": "*"}})
 # configuracoes basicas
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
+app.secret_key = 'chave_super_secreta_mudeme' # necessario para sessoes
 
 # funcao pra pegar conexao com banco
 def get_conn():
@@ -38,6 +39,13 @@ def init_database():
         
         db = get_conn()
         db.executescript(schema)
+        
+        # cria usuario admin padrao
+        print("Criando usuario admin...")
+        db.execute("INSERT OR IGNORE INTO usuarios (username, password, role) VALUES (?, ?, ?)", 
+                  ('admin', 'admin123', 'admin'))
+        db.commit()
+        
         db.close()
         print("Banco criado!")
 
@@ -88,6 +96,105 @@ def init_db():
         return jsonify({'status': 'ok'})
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
+
+from flask import session, redirect
+
+# checa se ta logado
+def login_required(f):
+    from functools import wraps
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            return jsonify({"erro": "nao autorizado"}), 401
+        return f(*args, **kwargs)
+    return decorated_function
+
+# login e logout
+@app.post("/api/login")
+def login():
+    data = request.get_json()
+    username = data.get("username")
+    password = data.get("password")
+    
+    conn = get_conn()
+    cur = conn.execute("SELECT * FROM usuarios WHERE username = ?", (username,))
+    user = cur.fetchone()
+    conn.close()
+    
+    if user and user['password'] == password: # em producao usar hash!
+        session['user_id'] = user['id']
+        session['username'] = user['username']
+        session['role'] = user['role']
+        return jsonify({"message": "login ok", "role": user['role']})
+        
+    return jsonify({"erro": "credenciais invalidas"}), 401
+
+@app.post("/api/logout")
+def logout():
+    session.clear()
+    return jsonify({"message": "logout ok"})
+
+@app.get("/api/me")
+def get_me():
+    if 'user_id' in session:
+        return jsonify({
+            "id": session['user_id'],
+            "username": session['username'],
+            "role": session['role']
+        })
+    return jsonify({"erro": "nao logado"}), 401
+
+# usuarios - so admin pode mexer
+@app.get("/api/usuarios")
+@login_required
+def list_usuarios():
+    if session.get('role') != 'admin':
+        return jsonify({"erro": "acesso negado"}), 403
+        
+    conn = get_conn()
+    cur = conn.execute("SELECT id, username, role FROM usuarios")
+    users = [dict(r) for r in cur.fetchall()]
+    conn.close()
+    return jsonify(users)
+
+@app.post("/api/usuarios")
+@login_required
+def create_usuario():
+    if session.get('role') != 'admin':
+        return jsonify({"erro": "acesso negado"}), 403
+        
+    data = request.get_json()
+    if not data.get('username') or not data.get('password'):
+        return jsonify({"erro": "campos obrigatorios"}), 400
+        
+    conn = get_conn()
+    try:
+        cur = conn.execute(
+            "INSERT INTO usuarios (username, password, role) VALUES (?, ?, ?)",
+            (data['username'], data['password'], data.get('role', 'user'))
+        )
+        conn.commit()
+        new_id = cur.lastrowid
+        conn.close()
+        return jsonify({"id": new_id, "username": data['username']}), 201
+    except sqlite3.IntegrityError:
+        conn.close()
+        return jsonify({"erro": "usuario ja existe"}), 400
+
+@app.delete("/api/usuarios/<int:user_id>")
+@login_required
+def delete_usuario(user_id):
+    if session.get('role') != 'admin':
+        return jsonify({"erro": "acesso negado"}), 403
+        
+    if user_id == session['user_id']:
+        return jsonify({"erro": "nao pode se deletar"}), 400
+        
+    conn = get_conn()
+    conn.execute("DELETE FROM usuarios WHERE id = ?", (user_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({"deleted": True})
 
 # daqui pra baixo é tudo de donos
 @app.get("/api/donos")
@@ -282,6 +389,7 @@ def create_veterinario():
     espec = data.get("especialidade")
     tel = data.get("telefone")
     email = data.get("email")
+    obs = data.get("observacoes")
 
     if not nome or not crmv:
         return jsonify({"erro": "nome e crmv obrigatorios"}), 400
@@ -294,8 +402,8 @@ def create_veterinario():
         return jsonify({"erro": "crmv ja existe"}), 400
 
     cur = conn.execute(
-        "INSERT INTO veterinarios (nome, crmv, especialidade, telefone, email) VALUES (?, ?, ?, ?, ?)",
-        (nome, crmv, espec, tel, email)
+        "INSERT INTO veterinarios (nome, crmv, especialidade, telefone, email, observacoes) VALUES (?, ?, ?, ?, ?, ?)",
+        (nome, crmv, espec, tel, email, obs)
     )
     conn.commit()
     vet_id = cur.lastrowid
@@ -321,9 +429,9 @@ def update_veterinario(vet_id):
             return jsonify({"erro": "crmv ja cadastrado"}), 400
 
     cur = conn.execute(
-        "UPDATE veterinarios SET nome=?, crmv=?, especialidade=?, telefone=?, email=? WHERE id=?",
+        "UPDATE veterinarios SET nome=?, crmv=?, especialidade=?, telefone=?, email=?, observacoes=? WHERE id=?",
         (data.get("nome"), data.get("crmv"), data.get("especialidade"),
-         data.get("telefone"), data.get("email"), vet_id)
+         data.get("telefone"), data.get("email"), data.get("observacoes"), vet_id)
     )
     conn.commit()
     
