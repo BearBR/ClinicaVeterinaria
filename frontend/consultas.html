@@ -36,7 +36,7 @@
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title mb-4">Nova Consulta</h5>
-                        <form id="form-consulta">
+                        <form id="form-consulta" novalidate>
                             <input type="hidden" id="consulta_id" name="consulta_id">
                             <div class="row g-3">
                                 <div class="col-md-6">
@@ -44,6 +44,7 @@
                                     <select class="form-select" id="pet_id" name="pet_id" required>
                                         <option value="">Selecione o pet...</option>
                                     </select>
+                                    <div class="invalid-feedback">Selecione um pet.</div>
                                 </div>
 
                                 <div class="col-md-6">
@@ -51,16 +52,19 @@
                                     <select class="form-select" id="veterinario_id" name="veterinario_id" required>
                                         <option value="">Selecione o veterinário...</option>
                                     </select>
+                                    <div class="invalid-feedback">Selecione um veterinário.</div>
                                 </div>
 
                                 <div class="col-md-6">
                                     <label for="data" class="form-label">Data da Consulta</label>
                                     <input type="date" class="form-control" id="data" name="data" required>
+                                    <div class="invalid-feedback">Informe uma data válida (hoje ou futura).</div>
                                 </div>
 
                                 <div class="col-md-6">
                                     <label for="hora" class="form-label">Horário</label>
                                     <input type="time" class="form-control" id="hora" name="hora" required>
+                                    <div class="invalid-feedback">Informe um horário válido.</div>
                                 </div>
 
                                 <div class="col-12">
@@ -156,6 +160,42 @@
                     }
                 });
 
+            // realtime validation for consulta form fields
+            const consultaForm = document.getElementById('form-consulta');
+            if (consultaForm) {
+                ['pet_id','veterinario_id','data','hora'].forEach(name => {
+                    const el = consultaForm.querySelector(`[name="${name}"]`);
+                    if (!el) return;
+                    el.addEventListener('input', () => {
+                        // create current data snapshot
+                        const fdNow = new FormData(consultaForm);
+                        const now = {
+                            pet_id: fdNow.get('pet_id'),
+                            veterinario_id: fdNow.get('veterinario_id'),
+                            data: fdNow.get('data'),
+                            hora: fdNow.get('hora')
+                        };
+                        const errs = (function validateConsultaQuick(obj) {
+                            const errors = {};
+                            if (!obj.pet_id || String(obj.pet_id).trim() === '') errors.pet_id = true;
+                            if (!obj.veterinario_id || String(obj.veterinario_id).trim() === '') errors.veterinario_id = true;
+                            if (!obj.data) errors.data = true;
+                            else {
+                                const today = new Date(); today.setHours(0,0,0,0);
+                                const d = new Date(obj.data + 'T00:00:00');
+                                if (isNaN(d.getTime()) || d < today) errors.data = true;
+                            }
+                            if (!obj.hora) errors.hora = true;
+                            return Object.keys(errors).length ? errors : null;
+                        })(now) || {};
+
+                        const fieldEl = consultaForm.querySelector(`[name="${name}"]`);
+                        if (!fieldEl) return;
+                        if (errs[name]) fieldEl.classList.add('is-invalid'); else fieldEl.classList.remove('is-invalid');
+                    });
+                });
+            }
+
             async function carregarConsultas() {
                 try {
                     const response = await fetch(`${API}/api/consultas`);
@@ -200,6 +240,41 @@
                     hora: formData.get('hora'),
                     motivo: formData.get('observacoes')
                 };
+
+                // client-side validation
+                function showInvalid(name, show) {
+                    const el = document.querySelector(`#form-consulta [name="${name}"]`);
+                    if (!el) return;
+                    if (show) el.classList.add('is-invalid'); else el.classList.remove('is-invalid');
+                }
+
+                function validateConsulta(obj) {
+                    const errors = {};
+                    if (!obj.pet_id || String(obj.pet_id).trim() === '') errors.pet_id = 'Selecione um pet';
+                    if (!obj.veterinario_id || String(obj.veterinario_id).trim() === '') errors.veterinario_id = 'Selecione um veterinário';
+                    if (!obj.data) errors.data = 'Data obrigatória';
+                    else {
+                        // data mínima: hoje
+                        const today = new Date();
+                        today.setHours(0,0,0,0);
+                        const d = new Date(obj.data + 'T00:00:00');
+                        if (isNaN(d.getTime()) || d < today) errors.data = 'Data deve ser hoje ou futura';
+                    }
+                    if (!obj.hora) errors.hora = 'Horário obrigatório';
+                    return Object.keys(errors).length ? errors : null;
+                }
+
+                const clientErrors = validateConsulta(data);
+                // clear previous
+                ['pet_id','veterinario_id','data','hora'].forEach(n => showInvalid(n,false));
+                if (clientErrors) {
+                    Object.keys(clientErrors).forEach(k => showInvalid(k,true));
+                    // focus first invalid
+                    const first = Object.keys(clientErrors)[0];
+                    const el = document.querySelector(`#form-consulta [name="${first}"]`);
+                    if (el) el.focus();
+                    return;
+                }
 
                 try {
                     let response;
