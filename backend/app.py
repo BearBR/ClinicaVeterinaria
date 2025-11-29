@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 import sqlite3
 import webbrowser
 import time
@@ -230,6 +231,9 @@ def create_dono():
     email = data.get("email")
     end = data.get("endereco")
     cep = data.get("cep")
+    # normaliza cep removendo qualquer caractere nao numerico
+    if cep is not None:
+        cep = re.sub(r"\D", "", str(cep))
 
     if not nome:
         return jsonify({"erro": "nome obrigatorio"}), 400
@@ -253,10 +257,15 @@ def update_dono(dono_id):
     data = request.get_json()
     conn = get_conn()
     # atualiza
+    # normaliza cep antes de salvar
+    cep_val = data.get("cep")
+    if cep_val is not None:
+        cep_val = re.sub(r"\D", "", str(cep_val))
+
     cur = conn.execute(
         "UPDATE donos SET nome=?, telefone=?, email=?, endereco=?, cep=? WHERE id=?",
         (data.get("nome"), data.get("telefone"), data.get("email"),
-         data.get("endereco"), data.get("cep"), dono_id)
+         data.get("endereco"), cep_val, dono_id)
     )
     conn.commit()
     
