@@ -81,11 +81,13 @@
                     <div class="col-md-2">
                         <label class="form-label">Idade (anos)</label>
                         <input type="number" class="form-control" name="idade" min="0" max="30" />
+                        <div class="invalid-feedback">Idade inválida. Informe um inteiro entre 0 e 30.</div>
                     </div>
 
                     <div class="col-md-2">
                         <label class="form-label">Peso (kg)</label>
-                        <input type="number" class="form-control" name="peso" step="0.1" min="0" max="100" />
+                        <input type="number" class="form-control" name="peso" step="0.1" min="0" max="100" inputmode="decimal" />
+                        <div class="invalid-feedback">Peso inválido. Informe um número entre 0 e 100 (use ponto ou vírgula).</div>
                     </div>
 
                     <div class="col-12">
@@ -144,6 +146,35 @@
             document.addEventListener('DOMContentLoaded', function () {
                 carregarDonos();
                 carregarPets();
+
+                // evita que o usuário digite 'e' (expoente) no campo number
+                const pesoInput = document.querySelector('input[name="peso"]');
+                if (pesoInput) {
+                    pesoInput.addEventListener('keydown', function (ev) {
+                        if (ev.key === 'e' || ev.key === 'E' || ev.key === '+' || ev.key === '-') {
+                            ev.preventDefault();
+                        }
+                    });
+
+                    // ao colar, limpa o valor para aceitar apenas dígitos e ponto
+                    pesoInput.addEventListener('paste', function (ev) {
+                        ev.preventDefault();
+                        const text = (ev.clipboardData || window.clipboardData).getData('text');
+                        const cleaned = text.replace(/[^0-9.,]/g, '').replace(',', '.');
+                        this.value = cleaned;
+                    });
+                }
+
+                // helper functions to show validation inline
+                function clearValidation() {
+                    document.querySelectorAll('#form-pet .is-invalid').forEach(el => el.classList.remove('is-invalid'));
+                }
+
+                function setInvalid(fieldName, show) {
+                    const el = document.querySelector(`#form-pet [name="${fieldName}"]`);
+                    if (!el) return;
+                    if (show) el.classList.add('is-invalid'); else el.classList.remove('is-invalid');
+                }
             });
 
             function carregarDonos() {
@@ -231,6 +262,45 @@
 
                 let fd = new FormData(e.target);
                 let dados = Object.fromEntries(fd);
+
+                // valida peso client-side: deve ser numero (ponto ou virgula), entre 0 e 100
+                clearValidation();
+                let clientError = false;
+                if (dados.peso !== undefined && String(dados.peso).trim() !== '') {
+                    // aceita vírgula como decimal
+                    const pesoNormalized = String(dados.peso).replace(',', '.');
+                    const pesoNum = Number(pesoNormalized);
+                    if (!isFinite(pesoNum) || pesoNum < 0 || pesoNum > 100) {
+                        setInvalid('peso', true);
+                        clientError = true;
+                    } else {
+                        // envia no formato com ponto
+                        dados.peso = String(pesoNum);
+                    }
+                } else {
+                    // remove campo vazio para não sobrescrever no update
+                    delete dados.peso;
+                }
+
+                // valida idade se preenchida
+                if (dados.idade !== undefined && String(dados.idade).trim() !== '') {
+                    const idadeNum = Number(String(dados.idade));
+                    if (!Number.isInteger(idadeNum) || idadeNum < 0 || idadeNum > 30) {
+                        setInvalid('idade', true);
+                        clientError = true;
+                    } else {
+                        dados.idade = String(idadeNum);
+                    }
+                } else {
+                    delete dados.idade;
+                }
+
+                if (clientError) {
+                    // focus first invalid
+                    const first = document.querySelector('#form-pet .is-invalid');
+                    if (first) first.focus();
+                    return;
+                }
 
                 let url = API + '/api/pets';
                 let metodo = 'POST';

@@ -33,6 +33,39 @@ def get_conn():
         pass
     return conn
 
+
+# valida dados de dono (usado em create e update)
+def validate_dono_data(data, require_name=False):
+    # espera dict-like
+    if not isinstance(data, dict):
+        return "dados invalidos"
+
+    nome = data.get('nome')
+    telefone = data.get('telefone')
+    email = data.get('email')
+    cep = data.get('cep')
+
+    if require_name and (not nome or not str(nome).strip()):
+        return "nome obrigatorio"
+    if nome and len(str(nome)) > 200:
+        return "nome muito longo"
+
+    if telefone is not None:
+        tel = re.sub(r"\D", "", str(telefone))
+        if tel != "" and len(tel) not in (10, 11):
+            return "telefone invalido. Deve conter 10 ou 11 digitos"
+
+    if email:
+        if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", str(email)):
+            return "email invalido"
+
+    if cep is not None:
+        c = re.sub(r"\D", "", str(cep))
+        if c != "" and len(c) != 8:
+            return "cep invalido. Deve conter 8 digitos"
+
+    return None
+
 # inicializa o banco de dados
 def init_database():
     # Garante que o diretório do DB existe
@@ -231,33 +264,23 @@ def get_dono(dono_id):
 def create_dono():
     data = request.get_json()
     # pega os dados que vieram
+    data = data or {}
+    # valida campos
+    err = validate_dono_data(data, require_name=True)
+    if err:
+        return jsonify({"erro": err}), 400
+
     nome = data.get("nome")
     tel = data.get("telefone")
     email = data.get("email")
     end = data.get("endereco")
     cep = data.get("cep")
-    # normaliza cep removendo qualquer caractere nao numerico
+
+    # normaliza cep e telefone antes de salvar
     if cep is not None:
         cep = re.sub(r"\D", "", str(cep))
-
-    # normaliza telefone (apenas digitos) e valida se fornecido
     if tel is not None:
         tel = re.sub(r"\D", "", str(tel))
-        # espera 10 ou 11 digitos (DDD + numero)
-        if tel != "" and len(tel) not in (10, 11):
-            return jsonify({"erro": "telefone invalido. Deve conter 10 ou 11 digitos"}), 400
-
-    # valida email simples se fornecido
-    if email:
-        if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email):
-            return jsonify({"erro": "email invalido"}), 400
-
-    if not nome:
-        return jsonify({"erro": "nome obrigatorio"}), 400
-    # valida CEP: se foi fornecido deve ter 8 digitos
-    if cep is not None and cep != "":
-        if len(cep) != 8:
-            return jsonify({"erro": "cep invalido. Deve conter 8 digitos"}), 400
 
     conn = get_conn()
     cur = conn.execute(
@@ -275,7 +298,12 @@ def create_dono():
 
 @app.put("/api/donos/<int:dono_id>")
 def update_dono(dono_id):
-    data = request.get_json()
+    data = request.get_json() or {}
+    # valida os campos que foram fornecidos (nome nao obrigatorio aqui)
+    err = validate_dono_data(data, require_name=False)
+    if err:
+        return jsonify({"erro": err}), 400
+
     conn = get_conn()
 
     # busca registro atual para preservar campos nao informados
@@ -374,8 +402,8 @@ def get_pet(pet_id):
 
 @app.post("/api/pets")
 def create_pet():
-    data = request.get_json()
-    
+    data = request.get_json() or {}
+
     nome = data.get("nome")
     especie = data.get("especie")
     raca = data.get("raca")
@@ -386,6 +414,30 @@ def create_pet():
     # ve se ta faltando alguma coisa
     if not nome or not especie or not dono:
         return jsonify({"erro": "faltam campos obrigatorios"}), 400
+
+    # valida idade se fornecida
+    if idade is not None and str(idade).strip() != "":
+        try:
+            idade_num = int(idade)
+        except Exception:
+            return jsonify({"erro": "idade invalida"}), 400
+        if idade_num < 0 or idade_num > 30:
+            return jsonify({"erro": "idade invalida"}), 400
+        idade = idade_num
+    else:
+        idade = None
+
+    # valida peso se fornecido
+    if peso is not None and str(peso).strip() != "":
+        try:
+            peso_num = float(str(peso).replace(',', '.'))
+        except Exception:
+            return jsonify({"erro": "peso invalido"}), 400
+        if not (0 <= peso_num <= 100):
+            return jsonify({"erro": "peso invalido"}), 400
+        peso = peso_num
+    else:
+        peso = None
 
     conn = get_conn()
     cur = conn.execute(
@@ -403,12 +455,56 @@ def create_pet():
 
 @app.put("/api/pets/<int:pet_id>")
 def update_pet(pet_id):
-    data = request.get_json()
+    data = request.get_json() or {}
     conn = get_conn()
+
+    # busca registro atual para preservar campos nao informados
+    cur = conn.execute("SELECT * FROM pets WHERE id = ?", (pet_id,))
+    row = cur.fetchone()
+    if not row:
+        conn.close()
+        return jsonify({"erro": "pet nao encontrado"}), 404
+
+    nome = data.get('nome', row['nome'])
+    especie = data.get('especie', row['especie'])
+    raca = data.get('raca', row['raca'])
+    idade_val = data.get('idade', row['idade'])
+    peso_val = data.get('peso', row['peso'])
+    dono_val = data.get('dono_id', row['dono_id'])
+
+    # valida idade se fornecida
+    if 'idade' in data:
+        if idade_val is not None and str(idade_val).strip() != "":
+            try:
+                idade_num = int(idade_val)
+            except Exception:
+                conn.close()
+                return jsonify({"erro": "idade invalida"}), 400
+            if idade_num < 0 or idade_num > 30:
+                conn.close()
+                return jsonify({"erro": "idade invalida"}), 400
+            idade_val = idade_num
+        else:
+            idade_val = None
+
+    # valida peso se fornecido
+    if 'peso' in data:
+        if peso_val is not None and str(peso_val).strip() != "":
+            try:
+                peso_num = float(str(peso_val).replace(',', '.'))
+            except Exception:
+                conn.close()
+                return jsonify({"erro": "peso invalido"}), 400
+            if not (0 <= peso_num <= 100):
+                conn.close()
+                return jsonify({"erro": "peso invalido"}), 400
+            peso_val = peso_num
+        else:
+            peso_val = None
+
     cur = conn.execute(
-        "UPDATE pets SET nome=?, especie=?, raca=?, idade=?, peso=?, dono_id=? WHERE id=?",
-        (data.get("nome"), data.get("especie"), data.get("raca"),
-         data.get("idade"), data.get("peso"), data.get("dono_id"), pet_id)
+        "UPDATE pets SET nome=?, especie=?, raca=?, idade=?, peso=?, dono_id=? WHERE id= ?",
+        (nome, especie, raca, idade_val, peso_val, dono_val, pet_id)
     )
     conn.commit()
     

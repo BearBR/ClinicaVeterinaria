@@ -31,32 +31,49 @@
     <main class="container">
         <h1 class="h3 mb-3">Gerenciamento de Donos</h1>
 
-        <form id="form-dono" class="mb-4">
-            <h5 class="mb-3">Cadastrar Dono</h5>
-            <div class="row g-3">
-                <div class="col-12">
-                    <input class="form-control form-control-lg" name="nome" placeholder="Nome" required />
-                </div>
-                <div class="col-12">
-                    <input class="form-control form-control-lg" name="telefone" placeholder="Telefone" />
-                </div>
-                <div class="col-12">
-                    <input class="form-control form-control-lg" name="email" placeholder="Email" />
-                </div>
-                <div class="col-12">
-                    <input class="form-control form-control-lg" name="endereco" placeholder="Endereço" />
-                </div>
-                <div class="col-12">
-                    <input class="form-control form-control-lg" name="cep" placeholder="CEP" />
-                </div>
-                <div class="col-12 d-grid gap-2">
-                    <button class="btn btn-primary btn-lg" type="submit" id="submit-btn">
-                        Salvar
-                    </button>
-                    <button class="btn btn-secondary btn-lg" type="button" id="cancel-btn" style="display:none;"
-                        onclick="cancelarEdicao()">
-                        Cancelar
-                    </button>
+        <form id="form-dono" class="card border-0 shadow-sm mb-4" novalidate>
+            <div class="card-header bg-primary text-white">
+                <h2 class="h5 mb-0">Cadastro de Dono</h2>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Nome Completo</label>
+                        <input class="form-control" name="nome" placeholder="Nome" required maxlength="200" />
+                        <div class="invalid-feedback">Nome é obrigatório (máx 200 caracteres).</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Telefone</label>
+                        <input class="form-control" name="telefone" placeholder="(99) 99999-9999" inputmode="tel" maxlength="16" />
+                        <div class="invalid-feedback">Telefone inválido. Use 10 ou 11 dígitos.</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" name="email" placeholder="email@exemplo.com" maxlength="254" />
+                        <div class="invalid-feedback">Email inválido.</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">CEP</label>
+                        <input class="form-control" name="cep" placeholder="CEP" inputmode="numeric" maxlength="9" />
+                        <div class="invalid-feedback">CEP inválido. Deve conter 8 dígitos.</div>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label">Endereço</label>
+                        <input class="form-control" name="endereco" placeholder="Endereço" maxlength="300" />
+                    </div>
+
+                    <div class="col-12 d-grid gap-2">
+                        <button class="btn btn-primary text-white" type="submit" id="submit-btn">
+                            Salvar
+                        </button>
+                        <button class="btn btn-secondary" type="button" id="cancel-btn" style="display:none;" onclick="cancelarEdicao()">
+                            Cancelar
+                        </button>
+                    </div>
                 </div>
             </div>
         </form>
@@ -173,33 +190,103 @@
 
         // submit do formulario
         document.addEventListener('DOMContentLoaded', function () {
-            document.getElementById('form-dono').addEventListener('submit', async function (e) {
+            const form = document.getElementById('form-dono');
+
+            function clearValidation() {
+                form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+            }
+
+            function setInvalid(inputName, show) {
+                const el = form.querySelector(`[name="${inputName}"]`);
+                if (!el) return;
+                if (show) el.classList.add('is-invalid'); else el.classList.remove('is-invalid');
+            }
+
+            function validateClientSide(data) {
+                // data: plain object from form
+                // returns null if ok or error message map {field: message}
+                const errors = {};
+
+                // nome required and length
+                if (!data.nome || !String(data.nome).trim()) errors.nome = 'nome obrigatorio';
+                else if (String(data.nome).length > 200) errors.nome = 'nome muito longo';
+
+                // telefone: normalize and check 10 or 11 digits when provided
+                if (data.telefone) {
+                    const t = String(data.telefone).replace(/\D/g, '');
+                    if (t !== '' && t.length !== 10 && t.length !== 11) errors.telefone = 'telefone invalido';
+                    else data.telefone = t; // normalize for sending
+                }
+
+                // cep: normalize and check 8 digits when provided
+                if (data.cep) {
+                    const c = String(data.cep).replace(/\D/g, '');
+                    if (c !== '' && c.length !== 8) errors.cep = 'cep invalido';
+                    else data.cep = c;
+                }
+
+                // email simple check
+                if (data.email) {
+                    const re = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+                    if (!re.test(String(data.email))) errors.email = 'email invalido';
+                }
+
+                return Object.keys(errors).length ? errors : null;
+            }
+
+            form.addEventListener('submit', async function (e) {
                 e.preventDefault();
+                clearValidation();
 
                 const fd = new FormData(e.target);
                 const donoData = Object.fromEntries(fd);
 
-                if (editandoId) {
-                    // atualiza
-                    await fetch(`${API}/api/donos/${editandoId}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(donoData)
-                    });
-                    editandoId = null;
-                    document.getElementById('submit-btn').textContent = 'Salvar';
-                    document.getElementById('cancel-btn').style.display = 'none';
-                } else {
-                    // cria novo
-                    await fetch(`${API}/api/donos`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(donoData)
-                    });
+                // client-side validation
+                const errors = validateClientSide(Object.assign({}, donoData));
+                if (errors) {
+                    // mark fields
+                    Object.keys(errors).forEach(f => setInvalid(f, true));
+                    // focus first invalid
+                    const first = Object.keys(errors)[0];
+                    const el = form.querySelector(`[name="${first}"]`);
+                    if (el) el.focus();
+                    return;
                 }
 
-                e.target.reset();
-                carregarDonos();
+                try {
+                    if (editandoId) {
+                        // atualiza
+                        const r = await fetch(`${API}/api/donos/${editandoId}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(donoData)
+                        });
+                        if (!r.ok) {
+                            const j = await r.json().catch(() => ({}));
+                            alert(j.erro || 'Erro ao atualizar');
+                        }
+                        editandoId = null;
+                        document.getElementById('submit-btn').textContent = 'Salvar';
+                        document.getElementById('cancel-btn').style.display = 'none';
+                    } else {
+                        // cria novo
+                        const r = await fetch(`${API}/api/donos`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(donoData)
+                        });
+                        if (!r.ok) {
+                            const j = await r.json().catch(() => ({}));
+                            alert(j.erro || 'Erro ao criar dono');
+                        }
+                    }
+
+                    e.target.reset();
+                    carregarDonos();
+                } catch (err) {
+                    console.error('Erro ao salvar dono', err);
+                    alert('Erro de rede ao salvar');
+                }
             });
 
             carregarDonos();

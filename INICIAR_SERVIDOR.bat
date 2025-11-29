@@ -28,9 +28,11 @@ echo Verificando dependências...
 pip show Flask >nul 2>&1
 if errorlevel 1 (
     echo Instalando dependências necessárias...
-    pip install -r requirements.txt
+    REM usa `py -m pip` para garantir que o pip do Python atual seja usado
+    py -m pip install -r requirements.txt
     if errorlevel 1 (
         echo [ERRO] Falha ao instalar dependências
+        echo Tente executar manualmente: py -m pip install -r requirements.txt
         pause
         exit /b 1
     )
