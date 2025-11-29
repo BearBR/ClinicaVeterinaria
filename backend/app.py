@@ -237,6 +237,10 @@ def create_dono():
 
     if not nome:
         return jsonify({"erro": "nome obrigatorio"}), 400
+    # valida CEP: se foi fornecido deve ter 8 digitos
+    if cep is not None and cep != "":
+        if len(cep) != 8:
+            return jsonify({"erro": "cep invalido. Deve conter 8 digitos"}), 400
 
     conn = get_conn()
     cur = conn.execute(
@@ -261,6 +265,12 @@ def update_dono(dono_id):
     cep_val = data.get("cep")
     if cep_val is not None:
         cep_val = re.sub(r"\D", "", str(cep_val))
+
+    # valida CEP: se foi fornecido deve ter 8 digitos
+    if cep_val is not None and cep_val != "":
+        if len(cep_val) != 8:
+            conn.close()
+            return jsonify({"erro": "cep invalido. Deve conter 8 digitos"}), 400
 
     cur = conn.execute(
         "UPDATE donos SET nome=?, telefone=?, email=?, endereco=?, cep=? WHERE id=?",
