@@ -91,6 +91,7 @@
                         <td>${u.username}</td>
                         <td>${u.role}</td>
                         <td>
+                            <button class="btn btn-warning btn-sm me-1" onclick="changePassword(${u.id})">Alterar senha</button>
                             <button class="btn btn-danger btn-sm" onclick="deleteUser(${u.id})">Excluir</button>
                         </td>
                     </tr>
@@ -126,6 +127,26 @@
             else {
                 const data = await res.json();
                 alert(data.erro);
+            }
+        }
+
+        async function changePassword(id) {
+            const pw = prompt('Informe a nova senha (mínimo 6 caracteres):');
+            if (pw === null) return; // cancel
+            if (String(pw).length < 6) { alert('Senha muito curta (mínimo 6 caracteres).'); return; }
+
+            const res = await fetch(`/api/usuarios/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: pw })
+            });
+
+            if (res.ok) {
+                alert('Senha atualizada com sucesso.');
+                loadUsers();
+            } else {
+                const data = await res.json().catch(() => ({}));
+                alert(data.erro || 'Erro ao atualizar senha');
             }
         }
 

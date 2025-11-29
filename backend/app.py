@@ -241,6 +241,47 @@ def delete_usuario(user_id):
     conn.close()
     return jsonify({"deleted": True})
 
+
+@app.put("/api/usuarios/<int:user_id>")
+@login_required
+def update_usuario(user_id):
+    # only admin can update users
+    if session.get('role') != 'admin':
+        return jsonify({"erro": "acesso negado"}), 403
+
+    data = request.get_json() or {}
+
+    # at least one updatable field required
+    if 'password' not in data and 'role' not in data:
+        return jsonify({"erro": "nenhum campo para atualizar"}), 400
+
+    conn = get_conn()
+    cur = conn.execute("SELECT * FROM usuarios WHERE id = ?", (user_id,))
+    row = cur.fetchone()
+    if not row:
+        conn.close()
+        return jsonify({"erro": "usuario nao encontrado"}), 404
+
+    new_password = data.get('password', row['password'])
+    new_role = data.get('role', row['role'])
+
+    # basic validations
+    if new_password is not None and str(new_password) == '':
+        conn.close()
+        return jsonify({"erro": "senha nao pode ser vazia"}), 400
+
+    if new_role not in ('user', 'admin'):
+        conn.close()
+        return jsonify({"erro": "role invalida"}), 400
+
+    conn.execute("UPDATE usuarios SET password = ?, role = ? WHERE id = ?", (new_password, new_role, user_id))
+    conn.commit()
+
+    cur = conn.execute("SELECT id, username, role FROM usuarios WHERE id = ?", (user_id,))
+    updated = dict(cur.fetchone())
+    conn.close()
+    return jsonify(updated)
+
 # daqui pra baixo é tudo de donos
 @app.get("/api/donos")
 def list_donos():
