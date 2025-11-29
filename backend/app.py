@@ -234,8 +234,17 @@ def delete_usuario(user_id):
         
     if user_id == session['user_id']:
         return jsonify({"erro": "nao pode se deletar"}), 400
-        
+    # prevent deleting the built-in admin account
     conn = get_conn()
+    cur = conn.execute("SELECT username FROM usuarios WHERE id = ?", (user_id,))
+    row = cur.fetchone()
+    if not row:
+        conn.close()
+        return jsonify({"erro": "usuario nao encontrado"}), 404
+    if row['username'] == 'admin':
+        conn.close()
+        return jsonify({"erro": "usuario 'admin' nao pode ser deletado"}), 400
+
     conn.execute("DELETE FROM usuarios WHERE id = ?", (user_id,))
     conn.commit()
     conn.close()
