@@ -235,17 +235,17 @@ def create_dono():
     if cep is not None:
         cep = re.sub(r"\D", "", str(cep))
 
-        # normaliza telefone (apenas digitos) e valida se fornecido
-        if tel is not None:
-            tel = re.sub(r"\D", "", str(tel))
-            # espera 10 ou 11 digitos (DDD + numero)
-            if tel != "" and len(tel) not in (10, 11):
-                return jsonify({"erro": "telefone invalido. Deve conter 10 ou 11 digitos"}), 400
+    # normaliza telefone (apenas digitos) e valida se fornecido
+    if tel is not None:
+        tel = re.sub(r"\D", "", str(tel))
+        # espera 10 ou 11 digitos (DDD + numero)
+        if tel != "" and len(tel) not in (10, 11):
+            return jsonify({"erro": "telefone invalido. Deve conter 10 ou 11 digitos"}), 400
 
-        # valida email simples se fornecido
-        if email:
-            if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email):
-                return jsonify({"erro": "email invalido"}), 400
+    # valida email simples se fornecido
+    if email:
+        if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email):
+            return jsonify({"erro": "email invalido"}), 400
 
     if not nome:
         return jsonify({"erro": "nome obrigatorio"}), 400
