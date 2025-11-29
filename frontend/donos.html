@@ -86,6 +86,14 @@
             if (!r.ok) window.location.href = '/login.html';
         });
 
+        // formata CEP para exibição (99999-999)
+        function formatCep(cep) {
+            if (!cep && cep !== 0) return '';
+            const s = String(cep).replace(/\D/g, '');
+            if (s.length === 8) return s.slice(0, 5) + '-' + s.slice(5);
+            return cep;
+        }
+
         // funcao pra carregar donos
         async function carregarDonos() {
             const r = await fetch(`${API}/api/donos`);
@@ -103,7 +111,7 @@
                         </td>
                         <td>${d.telefone || ''}</td>
                         <td>${d.endereco || ''}</td>
-                        <td>${d.cep || ''}</td>
+                            <td>${formatCep(d.cep)}</td>
                         <td>
                             <button class="btn btn-danger btn-sm me-1" onclick="deletarDono(${d.id})">Excluir</button>
                             <button class="btn btn-warning btn-sm" onclick="editarDono(${d.id})">Editar</button>
