@@ -29,25 +29,28 @@ def get_conn():
 
 # inicializa o banco de dados
 def init_database():
-    # cria banco se nao tiver ainda
-    if not os.path.exists(DB_PATH):
-        print("Criando banco...")
-        os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-        schema_file = open(SCHEMA_PATH, 'r', encoding='utf-8')
-        schema = schema_file.read()
-        schema_file.close()
-        
-        db = get_conn()
+    # Garante que o diretório do DB existe
+    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+
+    # Aplica o schema (CREATE TABLE IF NOT EXISTS ...) sempre que rodar
+    try:
+        with open(SCHEMA_PATH, 'r', encoding='utf-8') as schema_file:
+            schema = schema_file.read()
+    except Exception as e:
+        print(f"Erro ao ler schema.sql: {e}")
+        return
+
+    db = get_conn()
+    try:
         db.executescript(schema)
-        
-        # cria usuario admin padrao
-        print("Criando usuario admin...")
-        db.execute("INSERT OR IGNORE INTO usuarios (username, password, role) VALUES (?, ?, ?)", 
-                  ('admin', 'admin123', 'admin'))
+
+        # garante usuario admin padrao (nao sobrescreve se existir)
+        db.execute("INSERT OR IGNORE INTO usuarios (username, password, role) VALUES (?, ?, ?)",
+                   ('admin', 'admin123', 'admin'))
         db.commit()
-        
+    finally:
         db.close()
-        print("Banco criado!")
+    print("Banco inicializado/verificado")
 
 @app.route('/')
 def index():
@@ -55,17 +58,15 @@ def index():
 
 @app.route('/<path:filename>')
 def serve_static(filename):
-    if filename == 'favicon.ico':
-        abort(404)
-    
+    # Tenta servir qualquer arquivo do frontend (inclui favicon se existir).
     requested_path = os.path.join(FRONT_DIR, filename)
     if os.path.isfile(requested_path):
         return send_from_directory(FRONT_DIR, filename)
-    
+
     html_path = requested_path + '.html'
     if os.path.isfile(html_path):
         return send_from_directory(FRONT_DIR, filename + '.html')
-    
+
     abort(404)
 
 @app.route('/donos')
@@ -112,21 +113,26 @@ def login_required(f):
 # login e logout
 @app.post("/api/login")
 def login():
-    data = request.get_json()
+    # request.get_json pode retornar None se o cliente enviar body vazio ou content-type errado.
+    data = request.get_json(silent=True) or {}
     username = data.get("username")
     password = data.get("password")
-    
+
+    if not username or not password:
+        return jsonify({"erro": "username e password obrigatorios"}), 400
+
     conn = get_conn()
     cur = conn.execute("SELECT * FROM usuarios WHERE username = ?", (username,))
     user = cur.fetchone()
     conn.close()
-    
-    if user and user['password'] == password: # em producao usar hash!
+
+    # Em producao use hashing (bcrypt/scrypt). Aqui comparamos direto conforme esquema do projeto.
+    if user and user['password'] == password:
         session['user_id'] = user['id']
         session['username'] = user['username']
         session['role'] = user['role']
         return jsonify({"message": "login ok", "role": user['role']})
-        
+
     return jsonify({"erro": "credenciais invalidas"}), 401
 
 @app.post("/api/logout")

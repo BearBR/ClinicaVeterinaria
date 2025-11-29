@@ -4,7 +4,7 @@ import os
 import webbrowser
 import time
 import threading
-from backend.app import app
+from backend.app import app, init_database
 
 if __name__ == "__main__":
     print("=" * 50)
@@ -23,6 +23,9 @@ if __name__ == "__main__":
     
     threading.Thread(target=abrir, daemon=True).start()
     
+    # inicializa o banco (cria arquivo e usuario admin, se preciso)
+    init_database()
+
     # roda o servidor
     app.run(
         host='127.0.0.1',
