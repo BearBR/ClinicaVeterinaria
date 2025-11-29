@@ -235,6 +235,18 @@ def create_dono():
     if cep is not None:
         cep = re.sub(r"\D", "", str(cep))
 
+        # normaliza telefone (apenas digitos) e valida se fornecido
+        if tel is not None:
+            tel = re.sub(r"\D", "", str(tel))
+            # espera 10 ou 11 digitos (DDD + numero)
+            if tel != "" and len(tel) not in (10, 11):
+                return jsonify({"erro": "telefone invalido. Deve conter 10 ou 11 digitos"}), 400
+
+        # valida email simples se fornecido
+        if email:
+            if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email):
+                return jsonify({"erro": "email invalido"}), 400
+
     if not nome:
         return jsonify({"erro": "nome obrigatorio"}), 400
     # valida CEP: se foi fornecido deve ter 8 digitos
@@ -286,6 +298,20 @@ def update_dono(dono_id):
         if not cep_val or len(cep_val) != 8:
             conn.close()
             return jsonify({"erro": "cep invalido. Deve conter 8 digitos"}), 400
+
+        # normaliza/valida telefone se foi fornecido
+        if 'telefone' in data:
+            if telefone is not None:
+                telefone = re.sub(r"\D", "", str(telefone))
+            if telefone and len(telefone) not in (10, 11):
+                conn.close()
+                return jsonify({"erro": "telefone invalido. Deve conter 10 ou 11 digitos"}), 400
+
+        # valida email simples se foi fornecido
+        if 'email' in data and email:
+            if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email):
+                conn.close()
+                return jsonify({"erro": "email invalido"}), 400
 
     cur = conn.execute(
         "UPDATE donos SET nome=?, telefone=?, email=?, endereco=?, cep=? WHERE id=?",
