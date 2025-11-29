@@ -272,17 +272,21 @@ def update_dono(dono_id):
     telefone = data.get('telefone', row['telefone'])
     email = data.get('email', row['email'])
     endereco = data.get('endereco', row['endereco'])
+    # determine if cep was provided in request
+    cep_provided = 'cep' in data
     cep_val = data.get('cep', row['cep'])
 
-    # normaliza cep antes de salvar
+    # normaliza cep antes de salvar (if not None)
     if cep_val is not None:
         cep_val = re.sub(r"\D", "", str(cep_val))
 
     # valida CEP: se foi fornecido deve ter 8 digitos
-    if cep_val is not None and cep_val != "":
-        if len(cep_val) != 8:
-            conn.close()
-            return jsonify({"erro": "cep invalido. Deve conter 8 digitos"}), 400
+    if cep_provided:
+        # if user provided a non-empty value it must normalize to 8 digits
+        if cep_val is not None and cep_val != "":
+            if len(cep_val) != 8:
+                conn.close()
+                return jsonify({"erro": "cep invalido. Deve conter 8 digitos"}), 400
 
     cur = conn.execute(
         "UPDATE donos SET nome=?, telefone=?, email=?, endereco=?, cep=? WHERE id=?",
