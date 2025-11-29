@@ -282,11 +282,10 @@ def update_dono(dono_id):
 
     # valida CEP: se foi fornecido deve ter 8 digitos
     if cep_provided:
-        # if user provided a non-empty value it must normalize to 8 digits
-        if cep_val is not None and cep_val != "":
-            if len(cep_val) != 8:
-                conn.close()
-                return jsonify({"erro": "cep invalido. Deve conter 8 digitos"}), 400
+        # if user provided a value it must normalize to exactly 8 digits
+        if not cep_val or len(cep_val) != 8:
+            conn.close()
+            return jsonify({"erro": "cep invalido. Deve conter 8 digitos"}), 400
 
     cur = conn.execute(
         "UPDATE donos SET nome=?, telefone=?, email=?, endereco=?, cep=? WHERE id=?",
