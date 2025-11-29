@@ -138,6 +138,17 @@
             const API = 'http://127.0.0.1:5000';
             let editandoId = null;
 
+            // helper functions (global) so submit handler can access them
+            function clearValidation() {
+                document.querySelectorAll('#form-pet .is-invalid').forEach(el => el.classList.remove('is-invalid'));
+            }
+
+            function setInvalid(fieldName, show) {
+                const el = document.querySelector(`#form-pet [name="${fieldName}"]`);
+                if (!el) return;
+                if (show) el.classList.add('is-invalid'); else el.classList.remove('is-invalid');
+            }
+
             // auth check
             fetch('/api/me').then(r => {
                 if (!r.ok) window.location.href = '/login.html';
@@ -165,16 +176,7 @@
                     });
                 }
 
-                // helper functions to show validation inline
-                function clearValidation() {
-                    document.querySelectorAll('#form-pet .is-invalid').forEach(el => el.classList.remove('is-invalid'));
-                }
-
-                function setInvalid(fieldName, show) {
-                    const el = document.querySelector(`#form-pet [name="${fieldName}"]`);
-                    if (!el) return;
-                    if (show) el.classList.add('is-invalid'); else el.classList.remove('is-invalid');
-                }
+                // helper functions to show validation inline (defined globally)
                 // realtime validation for idade and peso
                 const idadeEl = document.querySelector('#form-pet [name="idade"]');
                 const pesoEl = document.querySelector('#form-pet [name="peso"]');
