@@ -135,10 +135,21 @@
 
             // preenche o form
             document.querySelector('input[name=nome]').value = dono.nome || '';
-            document.querySelector('input[name=telefone]').value = dono.telefone || '';
+
+            const telInput = document.querySelector('input[name=telefone]');
+            telInput.value = dono.telefone || '';
+            if (telInput && telInput.inputmask && dono.telefone) {
+                try { telInput.inputmask.setValue(dono.telefone); } catch (e) { /* ignore */ }
+            }
+
             document.querySelector('input[name=email]').value = dono.email || '';
             document.querySelector('input[name=endereco]').value = dono.endereco || '';
-            document.querySelector('input[name=cep]').value = dono.cep || '';
+
+            const cepInput = document.querySelector('input[name=cep]');
+            cepInput.value = dono.cep || '';
+            if (cepInput && cepInput.inputmask && dono.cep) {
+                try { cepInput.inputmask.setValue(dono.cep); } catch (e) { /* ignore */ }
+            }
 
             editandoId = id;
             document.getElementById('submit-btn').textContent = 'Alterar';
