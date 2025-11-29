@@ -289,6 +289,21 @@
                 }
             });
 
+            // realtime validation: validate individual fields as the user types
+            const fieldsToWatch = ['nome', 'telefone', 'email', 'cep'];
+            fieldsToWatch.forEach(name => {
+                const el = form.querySelector(`[name="${name}"]`);
+                if (!el) return;
+                el.addEventListener('input', () => {
+                    // build a minimal data object from current form values
+                    const fdNow = new FormData(form);
+                    const dataNow = Object.fromEntries(fdNow);
+                    const errs = validateClientSide(Object.assign({}, dataNow)) || {};
+                    // set only this field invalid state
+                    setInvalid(name, Boolean(errs[name]));
+                });
+            });
+
             carregarDonos();
         });
     </script>

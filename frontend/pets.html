@@ -175,6 +175,30 @@
                     if (!el) return;
                     if (show) el.classList.add('is-invalid'); else el.classList.remove('is-invalid');
                 }
+                // realtime validation for idade and peso
+                const idadeEl = document.querySelector('#form-pet [name="idade"]');
+                const pesoEl = document.querySelector('#form-pet [name="peso"]');
+
+                if (idadeEl) {
+                    idadeEl.addEventListener('input', () => {
+                        const v = String(idadeEl.value).trim();
+                        if (v === '') { setInvalid('idade', false); return; }
+                        const n = Number(v);
+                        if (!Number.isInteger(n) || n < 0 || n > 30) setInvalid('idade', true);
+                        else setInvalid('idade', false);
+                    });
+                }
+
+                if (pesoEl) {
+                    pesoEl.addEventListener('input', () => {
+                        const raw = String(pesoEl.value).trim();
+                        if (raw === '') { setInvalid('peso', false); return; }
+                        const norm = raw.replace(',', '.');
+                        const num = Number(norm);
+                        if (!isFinite(num) || num < 0 || num > 100) setInvalid('peso', true);
+                        else setInvalid('peso', false);
+                    });
+                }
             });
 
             function carregarDonos() {

@@ -47,7 +47,7 @@
         <h1 class="mb-4">Gerenciamento de Veterinários</h1>
 
         <form id="form-veterinario" class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-info text-white">
+            <div class="card-header bg-info text-white" novalidate>
                 <h2 class="h5 mb-0">Cadastro de Veterinário</h2>
             </div>
             <div class="card-body">
@@ -55,11 +55,13 @@
                     <div class="col-md-6">
                         <label class="form-label">Nome Completo</label>
                         <input class="form-control" name="nome" placeholder="Nome do veterinário" required />
+                        <div class="invalid-feedback">Nome inválido (mín. 3 caracteres).</div>
                     </div>
 
                     <div class="col-md-3">
                         <label class="form-label">CRMV</label>
                         <input class="form-control" name="crmv" placeholder="Número do CRMV" required />
+                        <div class="invalid-feedback">CRMV obrigatório.</div>
                     </div>
 
                     <div class="col-md-3">
@@ -78,11 +80,13 @@
                     <div class="col-md-6">
                         <label class="form-label">Email</label>
                         <input type="email" class="form-control" name="email" placeholder="email@exemplo.com" />
+                        <div class="invalid-feedback">Email inválido.</div>
                     </div>
 
                     <div class="col-md-6">
                         <label class="form-label">Telefone</label>
                         <input class="form-control" name="telefone" placeholder="(99) 99999-9999" />
+                        <div class="invalid-feedback">Telefone inválido.</div>
                     </div>
 
                     <div class="col-12">
@@ -237,7 +241,41 @@
             });
 
             document.addEventListener('DOMContentLoaded', function () {
+                const form = document.getElementById('form-veterinario');
                 carregarVeterinarios();
+
+                function showInvalid(formEl, name, show) {
+                    const el = formEl.querySelector(`[name="${name}"]`);
+                    if (!el) return;
+                    if (show) el.classList.add('is-invalid'); else el.classList.remove('is-invalid');
+                }
+
+                function validateVet(data) {
+                    const errors = {};
+                    if (!data.nome || String(data.nome).trim().length < 3) errors.nome = 'Nome inválido';
+                    if (!data.crmv || String(data.crmv).trim() === '') errors.crmv = 'CRMV obrigatório';
+                    if (data.email) {
+                        const re = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+                        if (!re.test(String(data.email))) errors.email = 'Email inválido';
+                    }
+                    if (data.telefone) {
+                        const t = String(data.telefone).replace(/\D/g, '');
+                        if (t !== '' && t.length !== 10 && t.length !== 11) errors.telefone = 'Telefone inválido';
+                    }
+                    return Object.keys(errors).length ? errors : null;
+                }
+
+                // realtime validation on inputs
+                ['nome','crmv','email','telefone'].forEach(name => {
+                    const el = form.querySelector(`[name="${name}"]`);
+                    if (!el) return;
+                    el.addEventListener('input', () => {
+                        const fdNow = new FormData(form);
+                        const dataNow = Object.fromEntries(fdNow);
+                        const errs = validateVet(dataNow) || {};
+                        showInvalid(form, name, Boolean(errs[name]));
+                    });
+                });
             });
         </script>
     </main>
