@@ -26,6 +26,11 @@ app.secret_key = 'chave_super_secreta_mudeme' # necessario para sessoes
 def get_conn():
     conn = sqlite3.connect(DB_PATH, timeout=10.0)
     conn.row_factory = sqlite3.Row
+    # habilita enforcement de foreign keys por conexão (SQLite precisa disso)
+    try:
+        conn.execute('PRAGMA foreign_keys = ON')
+    except Exception:
+        pass
     return conn
 
 # inicializa o banco de dados
@@ -545,14 +550,33 @@ def create_consulta():
     data = request.get_json()
     
     # tem que ter esses campos senao nao da
-    if not data.get('data') or not data.get('hora') or not data.get('pet_id') or not data.get('veterinario_id'):
+    if not data or not data.get('data') or not data.get('hora') or not data.get('pet_id') or not data.get('veterinario_id'):
         return jsonify({"erro": "faltam campos"}), 400
 
+    # valida que pet e veterinario existem
+    pet_id = data['pet_id']
+    vet_id = data['veterinario_id']
+
     conn = get_conn()
-    cur = conn.execute(
-        "INSERT INTO consultas (data, hora, motivo, pet_id, veterinario_id) VALUES (?, ?, ?, ?, ?)",
-        (data['data'], data['hora'], data.get('motivo'), data['pet_id'], data['veterinario_id'])
-    )
+    try:
+        cur = conn.execute("SELECT id FROM pets WHERE id = ?", (pet_id,))
+        if not cur.fetchone():
+            return jsonify({"erro": "pet nao existe"}), 400
+
+        cur = conn.execute("SELECT id FROM veterinarios WHERE id = ?", (vet_id,))
+        if not cur.fetchone():
+            return jsonify({"erro": "veterinario nao existe"}), 400
+
+        cur = conn.execute(
+            "INSERT INTO consultas (data, hora, motivo, pet_id, veterinario_id) VALUES (?, ?, ?, ?, ?)",
+            (data['data'], data['hora'], data.get('motivo'), pet_id, vet_id)
+        )
+    except sqlite3.IntegrityError as e:
+        return jsonify({"erro": "erro de integridade", "detalhes": str(e)}), 400
+    except Exception as e:
+        # log e devolve 500
+        print(f"Erro em create_consulta: {e}")
+        return jsonify({"erro": "erro ao criar consulta", "detalhes": str(e)}), 500
     conn.commit()
     consulta_id = cur.lastrowid
     
