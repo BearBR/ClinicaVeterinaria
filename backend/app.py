@@ -260,9 +260,21 @@ def create_dono():
 def update_dono(dono_id):
     data = request.get_json()
     conn = get_conn()
-    # atualiza
+
+    # busca registro atual para preservar campos nao informados
+    cur = conn.execute("SELECT * FROM donos WHERE id = ?", (dono_id,))
+    row = cur.fetchone()
+    if not row:
+        conn.close()
+        return jsonify({"erro": "dono nao encontrado"}), 404
+
+    nome = data.get('nome', row['nome'])
+    telefone = data.get('telefone', row['telefone'])
+    email = data.get('email', row['email'])
+    endereco = data.get('endereco', row['endereco'])
+    cep_val = data.get('cep', row['cep'])
+
     # normaliza cep antes de salvar
-    cep_val = data.get("cep")
     if cep_val is not None:
         cep_val = re.sub(r"\D", "", str(cep_val))
 
@@ -274,8 +286,7 @@ def update_dono(dono_id):
 
     cur = conn.execute(
         "UPDATE donos SET nome=?, telefone=?, email=?, endereco=?, cep=? WHERE id=?",
-        (data.get("nome"), data.get("telefone"), data.get("email"),
-         data.get("endereco"), cep_val, dono_id)
+        (nome, telefone, email, endereco, cep_val, dono_id)
     )
     conn.commit()
     
